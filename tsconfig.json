@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": { "types": ["node", "@playwright/test"] },
+  "include": ["playwright.config.ts", "scripts/phase1-worker-entry.ts"]
+}

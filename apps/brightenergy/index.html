@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="BrightEnergy mission assistance for a fictional customer account." />
+    <title>BrightEnergy · Mission assistance</title>
+  </head>
+  <body>
+    <header class="site-header"><a href="/" class="logo"><span class="spark">✦</span> BrightEnergy</a><span class="session">Signed in as Jamie Citizen</span></header>
+    <main>
+      <section class="hero">
+        <div><p class="eyebrow">RUVEL MISSION ASSISTANCE</p><h1>Let’s protect your energy account.</h1><p>BrightEnergy controls every action. Your Mission Passport decides which capabilities exist for this visit.</p></div>
+        <div class="tool-count"><span>Site capabilities</span><strong id="capability-count">0</strong><small id="webmcp-state">Checking WebMCP…</small></div>
+      </section>
+      <section class="layout">
+        <div class="stack">
+          <article class="card account">
+            <div class="card-heading"><div><p class="eyebrow">ACCOUNT SUMMARY</p><h2>Jamie Citizen</h2></div><span class="pill">•••• 4417</span></div>
+            <dl><div><dt>Current plan</dt><dd id="current-plan">Standard Flex</dd></div><div><dt>Estimated monthly cost</dt><dd id="monthly-cost">$146</dd></div><div><dt>Hardship status</dt><dd id="hardship-status">None</dd></div></dl>
+          </article>
+          <article class="card approval" id="approval-card" hidden>
+            <p class="eyebrow">HUMAN APPROVAL</p><h2>Switch to Saver Flex?</h2>
+            <div class="comparison"><div><span>Current</span><strong>Standard Flex</strong><small>$146/month</small></div><div><span>New</span><strong>Saver Flex</strong><small>$115/month</small></div></div>
+            <p class="saving">Estimated saving <strong>$31/month</strong></p>
+            <div class="actions"><button id="approve-action" type="button">Approve</button><button id="not-now" class="secondary" type="button">Not now</button></div>
+            <p id="approval-status" class="feedback"></p>
+          </article>
+          <article class="card event-card"><div class="card-heading"><div><p class="eyebrow">MISSION ACTIVITY</p><h2>BrightEnergy events</h2></div><span id="event-count">0 events</span></div><ol id="audit-list"></ol></article>
+        </div>
+        <aside class="stack">
+          <article class="card capabilities">
+            <p class="eyebrow">MISSION CAPABILITIES</p><h2>BrightEnergy Site Tools</h2>
+            <ul><li data-capability="get_account_summary"><span>✓</span> Read account</li><li data-capability="apply_hardship"><span>✓</span> Apply hardship</li><li id="change-capability" data-capability="change_plan"><span>✕</span> Change plan</li></ul>
+          </article>
+          <article class="card authority">
+            <p class="eyebrow">MISSION AUTHORITY</p><h2>Plan changes</h2><strong id="authority-state">Not granted for this mission</strong>
+            <p>Allow one bounded plan change during this mission. BrightEnergy still verifies approval before completion.</p>
+            <button id="grant-capability" type="button">Grant “Change plan”</button>
+            <button id="request-change" class="secondary full" type="button" disabled>Request Saver Flex</button>
+          </article>
+          <button id="return-mission" class="return" type="button">← Return to Mission</button>
+          <button id="reset-demo" class="text-button" type="button">Reset demo</button>
+        </aside>
+      </section>
+      <p id="notice" class="notice" role="status"></p>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

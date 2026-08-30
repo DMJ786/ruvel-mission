@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="One mission carried across independent WebMCP sites." />
+    <title>Ruvel Mission · Job loss</title>
+  </head>
+  <body>
+    <main>
+      <header class="masthead">
+        <a class="brand" href="/" aria-label="Ruvel Mission home">RUVEL <span>MISSION</span></a>
+        <p>One mission carried across independent WebMCP sites.</p>
+      </header>
+      <section class="hero">
+        <p class="eyebrow">ACTIVE MISSION</p>
+        <h1>Job loss</h1>
+        <p class="intent">“I lost my job yesterday. Help me.”</p>
+        <div class="actions">
+          <button id="start-mission" type="button">Start mission</button>
+          <button id="reset-demo" class="secondary" type="button">Reset demo</button>
+        </div>
+      </section>
+      <section class="grid">
+        <article class="card passport">
+          <div class="card-heading"><div><p class="eyebrow">MISSION PASSPORT</p><h2>Bounded authority</h2></div><span id="passport-status" class="status">Not issued</span></div>
+          <p>Shares only the minimum mission context. Identity and account details stay with each participating site.</p>
+          <dl><div><dt>BrightEnergy scopes</dt><dd id="scope-list">—</dd></div><div><dt>Version</dt><dd id="passport-version">—</dd></div></dl>
+          <button id="approve-passport" type="button" disabled>Approve Passport</button>
+        </article>
+        <article class="card partner">
+          <div class="card-heading"><div><p class="eyebrow">MISSION STEP 1</p><h2>BrightEnergy</h2></div><span id="partner-status" class="status">Waiting</span></div>
+          <p id="partner-summary">Protect the account, then find a more affordable energy plan.</p>
+          <ul id="outcomes" class="outcomes"></ul>
+          <button id="continue-partner" type="button" disabled>Continue to BrightEnergy <span aria-hidden="true">→</span></button>
+        </article>
+      </section>
+      <section class="card activity">
+        <div class="card-heading"><div><p class="eyebrow">MISSION ACTIVITY</p><h2>Audit trail</h2></div><span id="event-count" class="quiet">0 events</span></div>
+        <ol id="audit-list"><li class="empty">Start a mission to begin the trace.</li></ol>
+      </section>
+      <p id="notice" class="notice" role="status"></p>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

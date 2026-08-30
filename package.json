@@ -5,14 +5,16 @@
   "packageManager": "pnpm@11.19.0",
   "scripts": {
     "build": "pnpm -r build",
-    "dev": "concurrently -k -n HUB,PARTNER -c cyan,magenta \"pnpm --filter @ruvel/spike-hub dev\" \"pnpm --filter @ruvel/spike-partner dev\"",
+    "dev": "concurrently -k -n MISSION,BRIGHTENERGY -c cyan,green \"pnpm --filter @ruvel/mission-hub dev\" \"pnpm --filter @ruvel/brightenergy dev\"",
     "lint": "eslint .",
-    "test": "vitest run",
+    "test": "vitest run packages/spike-core/tests/index.test.ts packages/mission-core/tests/phase1.test.ts",
+    "test:e2e": "playwright test",
     "typecheck": "pnpm -r typecheck"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
     "@openai/sites-vite-plugin": "0.2.0",
+    "@playwright/test": "^1.62.1",
     "@types/node": "^22.18.0",
     "concurrently": "^9.2.1",
     "eslint": "^9.35.0",

@@ -1,0 +1,15 @@
+{
+  "name": "@ruvel/brightenergy",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@ruvel/mission-core": "workspace:*",
+    "@ruvel/spike-core": "workspace:*"
+  },
+  "scripts": {
+    "build": "vite build --configLoader runner && cd ../.. && node scripts/build-phase1-worker.mjs brightenergy",
+    "dev": "vite --configLoader runner --port 4181 --strictPort",
+    "typecheck": "tsc --noEmit"
+  }
+}
