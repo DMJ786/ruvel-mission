@@ -1,0 +1,12 @@
+{
+  "name": "@ruvel/spike-hub",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": { "@ruvel/spike-core": "workspace:*" },
+  "scripts": {
+    "build": "vite build --configLoader runner && node ../../scripts/write-sites-worker.mjs hub",
+    "dev": "vite --configLoader runner --port 4173 --strictPort",
+    "typecheck": "tsc --noEmit"
+  }
+}

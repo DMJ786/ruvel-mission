@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ruvel WebMCP Spike · Partner</title>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div><p class="eyebrow">PHASE 0 · PARTNER ORIGIN</p><h1>Independent partner</h1></div>
+        <code id="origin"></code>
+      </header>
+      <section class="controls">
+        <div>
+          <span>Partner ping capability</span>
+          <strong id="registration-state">Starting…</strong>
+        </div>
+        <button id="toggle-registration" type="button">Unregister</button>
+      </section>
+      <section class="grid">
+        <article><span>Secure context</span><strong id="secure-context"></strong></article>
+        <article><span>registerTool</span><strong id="register-api"></strong></article>
+        <article><span>Exposed to</span><code id="exposed-to"></code></article>
+        <article><span>Invocation count</span><strong id="invocation-count">0</strong></article>
+      </section>
+      <section class="output">
+        <div><span>Last input</span><pre id="last-input">None</pre></div>
+        <div><span>Last output</span><pre id="last-output">None</pre></div>
+      </section>
+      <section>
+        <h2>Registration log</h2>
+        <ol id="event-log"></ol>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
+

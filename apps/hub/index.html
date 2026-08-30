@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ruvel WebMCP Spike · Hub</title>
+  </head>
+  <body>
+    <main>
+      <header class="masthead">
+        <div>
+          <p class="eyebrow">PHASE 0 · HUB ORIGIN</p>
+          <h1>WebMCP cross-origin runtime spike</h1>
+          <p class="lede">Native registration, discovery, execution, lifecycle, and approval probes only.</p>
+        </div>
+        <div class="origin"><span>Origin</span><code id="origin"></code></div>
+      </header>
+
+      <section class="status-grid" aria-label="Environment status">
+        <article><span>Secure context</span><strong id="secure-context"></strong></article>
+        <article><span>registerTool</span><strong id="register-api"></strong></article>
+        <article><span>getTools</span><strong id="get-tools-api"></strong></article>
+        <article><span>executeTool</span><strong id="execute-tool-api"></strong></article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow">T1 / T2 / T4 / T6</p><h2>Cross-origin partner</h2></div>
+          <div class="actions">
+            <button id="discover-partner" type="button">Discover partner tools</button>
+            <button id="execute-ping" type="button">Execute partner ping</button>
+          </div>
+        </div>
+        <div class="debug-grid">
+          <div><span>Requested origin</span><code id="partner-origin"></code></div>
+          <div><span>Discovered tools</span><strong id="discovered-count">0</strong></div>
+          <div><span>toolchange events</span><strong id="toolchange-count">0</strong></div>
+          <div><span>Partner iframe</span><strong id="iframe-state">Loading</strong></div>
+        </div>
+        <pre id="partner-tools">No discovery attempt yet.</pre>
+        <pre id="cross-origin-result">No execution attempt yet.</pre>
+        <iframe
+          id="partner-frame"
+          title="Partner WebMCP spike origin"
+          allow="tools"
+        ></iframe>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow">T3 / T5</p><h2>Top-level agent probes</h2></div>
+          <span class="badge" id="top-level-count">0 registered</span>
+        </div>
+        <div class="probe-grid">
+          <article>
+            <h3>read_probe</h3>
+            <p>Read-only annotation. Returns current runtime state.</p>
+            <strong id="read-count">0 invocations</strong>
+          </article>
+          <article>
+            <h3>write_probe</h3>
+            <p>Ordinary write. Increments a local counter.</p>
+            <strong id="write-count">0 writes</strong>
+          </article>
+          <article class="approval-card">
+            <h3>slow_tool</h3>
+            <p>Consequential write held for explicit human approval.</p>
+            <strong id="approval-state">Idle</strong>
+            <span id="approval-elapsed">0s</span>
+            <div class="actions">
+              <button id="approve-slow" type="button" disabled>Approve</button>
+              <button id="reject-slow" type="button" class="secondary" disabled>Reject</button>
+            </div>
+          </article>
+        </div>
+        <pre id="probe-result">No probe invoked yet.</pre>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading"><div><p class="eyebrow">EVIDENCE</p><h2>Runtime event log</h2></div></div>
+        <ol id="event-log" class="event-log"></ol>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

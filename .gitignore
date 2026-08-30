@@ -1,0 +1,11 @@
+node_modules/
+node_modules.stuck/
+.pnpm-store/
+dist/
+coverage/
+certs/*.pem
+certs/*.cer
+playwright-report/
+test-results/
+artifacts/
+.DS_Store
