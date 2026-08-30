@@ -1,85 +1,127 @@
-# WebMCP Runtime Spike
+# PHASE 0 — WEBMCP SPIKE REPORT
 
-> Status: **IN PROGRESS — runtime results are intentionally blank until observed.**
+Environment
+-----------
+Hub URL: `https://ruvel-phase0-hub-dhili.jmsd0811.chatgpt.site/?partnerOrigin=https%3A%2F%2Fruvel-phase0-partner-dhili.jmsd0811.chatgpt.site`
 
-Environment:
-- Date: 2026-08-30 (Australia/Sydney)
-- Browser: Pending runtime test
-- ChatGPT environment: Codex desktop built-in browser; exact version pending inspection
-- Hub URL: `https://hub.localhost:4173`
-- Partner URL: `https://partner.localhost:4174`
+Partner URL: `https://ruvel-phase0-partner-dhili.jmsd0811.chatgpt.site/?hubOrigin=https%3A%2F%2Fruvel-phase0-hub-dhili.jmsd0811.chatgpt.site`
 
-## T1 — Native iframe visibility
+Browser: Codex desktop built-in Chromium browser. External Chrome was not used for T1–T6.
 
-Result: PENDING
+ChatGPT environment: Codex desktop built-in Browser Use WebMCP capability; exact application/runtime version was not exposed.
 
-Evidence: Pending runtime test.
+Date/time tested: 2026-08-31 00:01 AEST (Australia/Sydney).
 
-Observed behaviour: Pending runtime test.
+TLS/environment note: The previous `*.localhost` failure came from an ad-hoc CA and leaf certificate that Windows/Chromium did not trust, so Norton rejected the connection. Phase 0 moved to two public OpenAI Sites production origins. Both returned HTTP 200 through strict certificate verification, reported `isSecureContext === true`, and loaded with no browser console warnings or errors. The hub response used `Permissions-Policy: tools=(self "https://ruvel-phase0-partner-dhili.jmsd0811.chatgpt.site")`; the iframe used `allow="tools"`.
 
-Implication: Pending runtime test.
+T1 — Native iframe visibility
+-----------------------------
+Result: **NO**.
 
-## T2 — Cross-origin `executeTool`
+Evidence: On the hub, ChatGPT Site Tools listed only the four hub-origin tools: `ping_partner`, `read_probe`, `write_probe`, and `slow_tool`. The partner iframe visibly loaded on its separate secure origin, but showed `document.modelContext unavailable`, `registerTool: false`, and `ping: Unregistered`. When opened as a top-level page, the same partner immediately registered `ping`, which appeared in ChatGPT Site Tools.
 
-Result: PENDING
+Observed behaviour: ChatGPT does not expose `document.modelContext` inside this cross-origin iframe, even with clean HTTPS, the exact hub `Permissions-Policy`, `allow="tools"`, and exact `exposedTo`. The hub's `getTools({ fromOrigins: [partnerOrigin] })` call returned the hub's own four tools rather than a partner tool.
 
-Evidence: Pending runtime test.
+Implication: Do not architect Phase 1 around native iframe tool visibility. Partner-native WebMCP is reliable only when that partner is the top-level document in this environment.
 
-Observed behaviour: Pending runtime test.
+T2 — Cross-origin executeTool
+-----------------------------
+Result: **NO**.
 
-Implication: Pending runtime test.
+Evidence: Invoking `hub.ping_partner` failed with `PARTNER_PING_NOT_DISCOVERED`. The discovery step returned the four hub-origin tools, so there was no partner `ping` object to pass to `executeTool()`. As a control, top-level `partner.ping({ message: "direct T4 verification" })` succeeded and returned `{ origin: "partner", received: "direct T4 verification", timestamp: "2026-08-30T14:00:28.707Z" }`.
 
-## T3 — Long-running human approval
+Observed behaviour: The partner iframe had no WebMCP producer surface, cross-origin discovery did not return partner tools, and cross-origin execution could not begin. This was not a TLS, CORS, access, or Permissions-Policy failure.
 
-Result: PENDING
+Implication: Native hub-to-iframe `getTools()`/`executeTool()` composition is not viable for the hackathon environment tested.
 
-Evidence: Pending 60-second and 120-second runtime tests.
+T3 — Long-running approval
+--------------------------
+Result: **NO for a single pending agent-facing WebMCP call; YES for page-local continuation**.
 
-Observed behaviour: Pending runtime test.
+60s: The page callback remained pending and accepted human approval after **69,896 ms**. The browser's Site Tool call transport had already failed after approximately **24.5 seconds** with `Timed out running CDP command "Runtime.evaluate"`.
 
-Implication: Pending runtime test.
+120s: The page callback remained pending and accepted human approval after **140,193 ms**. The browser's Site Tool call transport had already failed after approximately **23.7 seconds** with the same timeout.
 
-## T4 — Live tool surface changes
+Observed behaviour: The registered callback received no execution-options object and therefore no `AbortSignal`. After the client timeout, no abort event fired; the page callback continued until its in-page Approve button was clicked.
 
-Result: PENDING
+Implication: Do not keep consequential WebMCP calls pending for human approval. Return an `awaiting_approval` result immediately, persist an approval ID, complete approval in the partner UI, then use a separate continuation/status tool.
 
-Evidence: Pending registered → unregistered → registered runtime test.
+T4 — Dynamic toolchange
+-----------------------
+Result: **PARTIAL**.
 
-Observed behaviour: Pending runtime test.
+Unregister: On the top-level partner page, aborting the registration changed the visible state to Unregistered and ChatGPT immediately announced that WebMCP tools were no longer available. A new fetch returned no tools.
 
-Implication: Pending runtime test.
+Re-register: Re-registering restored `ping`; ChatGPT announced it as available again, and a direct `ping` invocation succeeded.
 
-## T5 — Confirmation behaviour
+ChatGPT Site Tools refresh: **YES for a top-level page. NO for partner-to-hub iframe propagation.** The tested `document.modelContext` object did not implement `addEventListener`, the embedded partner had no WebMCP context, and the hub's toolchange count remained zero.
 
-Result: PENDING
+Implication: AbortSignal-owned registration can power a truthful live `6 → 7` change when the registering document is top-level. Do not depend on iframe-origin `toolchange` propagation or `modelContext.addEventListener` in this runtime.
 
-Evidence: Pending `read_probe`, `write_probe`, and `slow_tool` calls.
+T5 — Confirmations
+------------------
+Read-only: `read_probe` completed without a ChatGPT confirmation in **3,842 ms**.
 
-Observed behaviour: Pending runtime test.
+Ordinary write: `write_probe` completed without a ChatGPT confirmation in **2,967 ms**.
 
-Implication: Pending runtime test.
+Consequential write: `slow_tool` produced no separate ChatGPT confirmation. Its own in-page Approve/Reject controls worked, but the browser Site Tool transport timed out before either long approval completed.
 
-## T6 — Cross-origin access
+Implication: `readOnlyHint` accurately describes intent but does not establish a dependable confirmation policy. Put the single consequential decision in the partner UI and use the reliable two-step approval protocol from T3.
 
-Result: PENDING
+T6 — Cross-origin access
+------------------------
+Result: **PARTIAL**.
 
-Evidence: Pending runtime test.
+Steps required: Open the hub URL only. No prior partner navigation, separate ChatGPT site-access grant, authentication, cookie setup, or extra approval was required for the partner iframe to load. The iframe loaded securely and visually on the first hub visit. Its WebMCP tools still did not work because `document.modelContext` was unavailable in the iframe. Opening the partner as a top-level page made its tool available without an additional access flow.
 
-Observed behaviour: Pending runtime test.
+Implication: Cross-origin access/setup is not the blocker; WebMCP's iframe exposure in this ChatGPT environment is the blocker.
 
-Implication: Pending runtime test.
+Recommended architecture
+------------------------
+Branch: **D — multi-page mission**.
 
-# Recommended Architecture
+Reason: Partner WebMCP works when the partner is top-level, while native iframe registration, discovery, execution, and lifecycle propagation do not. Branch D uses only runtime behaviour proven in this spike. A `postMessage` mirror bridge could preserve one-tab composition, but it was not proven by T1–T6 and should not be introduced before a separate, tightly bounded review.
 
-Branch: PENDING
+Blocking issues
+---------------
+1. `document.modelContext` is unavailable in the cross-origin partner iframe despite correct HTTPS and policy configuration.
+2. `getTools({ fromOrigins: [partnerOrigin] })` returned hub-origin tools, so native cross-origin `executeTool()` could not be attempted.
+3. Agent-facing Site Tool calls time out after roughly 24 seconds, provide no `AbortSignal`, and cannot reliably await long human approval; iframe-driven `toolchange` is also unavailable.
 
-Reason: Phase 0 runtime evidence has not yet been collected.
+Files created
+-------------
+- Root workspace: `package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`, `tsconfig.base.json`, `eslint.config.mjs`, `.gitignore`.
+- Hub: `apps/hub/index.html`, `apps/hub/src/main.ts`, `apps/hub/src/styles.css`, `apps/hub/vite.config.ts`, `apps/hub/tsconfig.json`, `apps/hub/package.json`, `apps/hub/.openai/hosting.json`.
+- Partner: `apps/partner/index.html`, `apps/partner/src/main.ts`, `apps/partner/src/styles.css`, `apps/partner/vite.config.ts`, `apps/partner/tsconfig.json`, `apps/partner/package.json`, `apps/partner/.openai/hosting.json`.
+- Shared spike code/tests: `packages/spike-core/src/index.ts`, `packages/spike-core/tests/index.test.ts`, `packages/spike-core/package.json`, `packages/spike-core/tsconfig.json`.
+- Deployment/documentation: `scripts/write-sites-worker.mjs`, `docs/webmcp-spike.md`, `certs/.gitkeep`.
 
-# Known Limitations
+Commands executed
+-----------------
+- Installed dependencies with strict TLS verification using the locally trusted Norton root as `cafile`; no TLS verification or browser security was disabled.
+- Ran ESLint, TypeScript checks for all three projects, four Vitest tests, and both Vite production builds.
+- Generated and syntax-checked self-contained Sites workers, locally verified HTTP 200 and exact policy headers, committed source, pushed the exact commits, saved Sites versions, and deployed both public production origins.
+- Performed strict HTTPS fetches against both production URLs and exercised T1–T6 with the Codex built-in browser's WebMCP, DOM, and console inspection surfaces.
 
-- Official OpenAI documentation states that the built-in browser currently does not discover tools registered inside same-origin or cross-origin iframes. This is a documentation baseline, not a substitute for the requested runtime test.
-- WebMCP is an evolving proposal. This harness uses the current AbortSignal-owned registration lifecycle rather than the removed `unregisterTool()` API.
+Test/build results
+------------------
+- ESLint: **PASS**.
+- TypeScript: **PASS** for `spike-core`, hub, and partner.
+- Vitest: **PASS — 4/4 tests**.
+- Vite production builds: **PASS** for hub and partner.
+- Generated worker syntax/local response tests: **PASS**.
+- Deployed HTTPS: **PASS — HTTP 200, secure contexts, exact Permissions-Policy, iframe loaded, zero console warnings/errors**.
+- T1: **NO**.
+- T2: **NO**.
+- T3: **NO for a single long-running WebMCP call; page-local continuation survived**.
+- T4: **PARTIAL; live top-level refresh works**.
+- T5: **PASS as measurement; no ChatGPT confirmations observed**.
+- T6: **PARTIAL; access is clean but iframe WebMCP is unavailable**.
 
-# Next Step
+Recommended Phase 1
+-------------------
+After architectural review, implement one partner end-to-end using Branch D: make the partner a top-level mission page, use real dynamic WebMCP registration there, share only minimal mission state, and use an immediate `awaiting_approval` response plus a separate continuation/status tool. Do not begin Phase 1 until this branch is approved.
 
-Run T1–T6 in the ChatGPT built-in browser, record exact evidence, select one architecture branch, and stop for review.
+Confidence
+----------
+**High** for the tested Codex built-in browser environment. Runtime behaviour was reproduced on public trusted HTTPS origins with visible page state, Site Tools notifications, returned tool results/errors, elapsed timings, and clean console evidence.
