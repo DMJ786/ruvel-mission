@@ -131,10 +131,12 @@ function finishApproval(approved: boolean) {
   }
 }
 
-function executeSlowTool(options: { signal: AbortSignal }) {
+function executeSlowTool(options?: { signal?: AbortSignal }) {
   if (pendingApproval) throw new Error("SLOW_TOOL_ALREADY_PENDING");
+  const signal = options?.signal;
   approvalStateElement.textContent = "Awaiting human approval";
   log("slow_tool awaiting approval");
+  if (!signal) log("slow_tool invoked without AbortSignal");
   return new Promise((resolve, reject) => {
     const onAbort = () => {
       if (!pendingApproval) return;
@@ -148,12 +150,12 @@ function executeSlowTool(options: { signal: AbortSignal }) {
       log("slow_tool AbortSignal triggered", { elapsedMs });
       reject(error);
     };
-    options.signal.addEventListener("abort", onAbort, { once: true });
+    signal?.addEventListener("abort", onAbort, { once: true });
     pendingApproval = {
       startedAt: Date.now(),
       resolve,
       reject,
-      cleanup: () => options.signal.removeEventListener("abort", onAbort),
+      cleanup: () => signal?.removeEventListener("abort", onAbort),
     };
     updateProbeState();
   });
@@ -211,7 +213,7 @@ async function registerTopLevelTools(context: WebMcpModelContext) {
       description: "Request an explicit human decision and keep this consequential write pending until the person approves or rejects it.",
       inputSchema: { type: "object", properties: {}, additionalProperties: false },
       annotations: { readOnlyHint: false },
-      execute: (_input: Record<string, unknown>, options: { signal: AbortSignal }) =>
+      execute: (_input: Record<string, unknown>, options?: { signal?: AbortSignal }) =>
         executeSlowTool(options),
     },
   ];
