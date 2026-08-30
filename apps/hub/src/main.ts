@@ -250,12 +250,19 @@ frame.addEventListener("load", () => {
 });
 
 if (modelContext) {
-  modelContext.addEventListener("toolchange", () => {
-    toolchangeCount += 1;
-    requireElement<HTMLElement>("#toolchange-count").textContent = String(toolchangeCount);
-    log("Hub received native toolchange", { count: toolchangeCount });
-    void refreshPartnerTools("native toolchange");
-  });
+  const eventTarget = modelContext as WebMcpModelContext & {
+    addEventListener?: (type: string, listener: EventListener) => void;
+  };
+  if (typeof eventTarget.addEventListener === "function") {
+    eventTarget.addEventListener("toolchange", () => {
+      toolchangeCount += 1;
+      requireElement<HTMLElement>("#toolchange-count").textContent = String(toolchangeCount);
+      log("Hub received native toolchange", { count: toolchangeCount });
+      void refreshPartnerTools("native toolchange");
+    });
+  } else {
+    log("modelContext.addEventListener unavailable; lifecycle will be checked explicitly");
+  }
   void registerTopLevelTools(modelContext);
 } else {
   log("document.modelContext unavailable");
