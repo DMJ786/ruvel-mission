@@ -33,8 +33,21 @@ function handleOnly(url: string) {
 test.describe("Phase 2 two-partner mission", () => {
   test.skip(!process.env.MISSION_URL, "MISSION_URL is required");
   for (const run of [1, 2, 3]) test(`golden path ${run}`, async ({ page, context }) => {
+    const browserErrors: string[] = [];
+    const platformMessages: string[] = [];
+    page.on("pageerror", error => browserErrors.push(error.message));
+    page.on("console", message => {
+      if (!["error", "warning"].includes(message.type())) return;
+      const text = message.text();
+      // Stock Edge lacks native WebMCP; Sites also injects a Cloudflare inline script
+      // that our unchanged CSP blocks. Retain and report these, never relax security.
+      const knownPlatformMessage = text === "Error with Permissions-Policy header: Origin trial controlled feature not enabled: 'tools'."
+        || text.startsWith("Executing inline script violates the following Content Security Policy directive 'script-src 'self''.");
+      (knownPlatformMessage ? platformMessages : browserErrors).push(`${page.url()}: ${text}`);
+    });
     await harness(page);
     await page.goto(process.env.MISSION_URL!);
+    expect((await page.request.get(`${process.env.MISSION_URL}/favicon.ico`)).status()).toBe(204);
     await page.getByRole("button", { name: "Reset demo" }).click();
     await page.getByRole("button", { name: "Start mission" }).click();
     await page.getByRole("button", { name: "Approve Passport" }).click();
@@ -70,7 +83,11 @@ test.describe("Phase 2 two-partner mission", () => {
     await page.getByRole("button", { name: /Grant/u }).click();
     await expect(page.locator("#capability-count")).toHaveText("3");
     expect(await names(page)).toContain("change_plan");
+    const pendingStarted = Date.now();
     const pending = await invoke(page, "change_plan", { plan: "saver_flex" });
+    const pendingMs = Date.now() - pendingStarted;
+    expect(pendingMs).toBeLessThan(10_000);
+    test.info().annotations.push({ type: "awaiting_approval_ms", description: String(pendingMs) });
     expect(pending.status).toBe("awaiting_approval");
     await page.getByRole("button", { name: "Approve", exact: true }).click();
     await expect(page.locator("#approval-status")).toContainText("Approved");
@@ -111,5 +128,7 @@ test.describe("Phase 2 two-partner mission", () => {
     await expect(page.locator("#eligibility")).toHaveText("Unchecked");
     await expect(page.locator("#claim-status")).toHaveText("None");
     await expect(page.locator("#argument-log")).toBeEmpty();
+    await test.info().attach("platform-console-messages", { body: JSON.stringify(platformMessages, null, 2), contentType: "application/json" });
+    expect(browserErrors).toEqual([]);
   });
 });

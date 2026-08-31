@@ -21,6 +21,8 @@ export default {
       "Referrer-Policy": "no-referrer",
       "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
     });
+    // The bounded demo has no favicon asset; answer browser auto-requests explicitly.
+    if (pathname === "/favicon.ico" && !file) return new Response(null, { status: 204, headers });
     if (!file) return new Response("Not Found", { status: 404, headers });
     headers.set("Content-Type", file.type);
     headers.set("Cache-Control", pathname.startsWith("/assets/") ? "public, max-age=31536000, immutable" : "no-store");

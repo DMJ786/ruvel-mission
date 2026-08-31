@@ -1,5 +1,16 @@
 # Architecture decisions
 
+## ADR-003: Preserve security boundaries during public Phase 2 validation
+
+- Status: Accepted for the bounded Phase 2 deployment
+- Date: 2026-08-31
+
+The deployed two-partner journey required no architecture or BrightEnergy interaction change. Initial automated readiness assertions used Playwright's five-second default while partner canonical-state requests were still pending. Tests now allow a bounded twenty-second readiness assertion (no sleeps or retries), while separately requiring the plan-change request to return `awaiting_approval` in under ten seconds.
+
+Stock Edge reports that the experimental `tools` Permissions Policy feature is unavailable; it is only the contract-test harness, not the native WebMCP proof. Deployed HTML also contains an extra Cloudflare challenge-platform inline script not present in the application build. The application's `script-src 'self'` correctly blocks it. Do not add `unsafe-inline`, disable CSP/TLS checks, or remove the intended tools policy to silence these messages. Preserve them in test attachments and report this platform compatibility limitation separately from application errors; actual WebMCP is validated through the Codex browser.
+
+The only deployed resource fix is an explicit empty 204 response for automatic `/favicon.ico` requests, since this minimal demo ships no icon. It changes no product interaction, mission state or permission. All unexpected console/page errors remain test failures. No database schema, partner flow or Phase 3 feature is introduced.
+
 ## ADR-002: Move Phase 1 portable envelope to durable mission storage
 
 - Status: Accepted for Phase 2
