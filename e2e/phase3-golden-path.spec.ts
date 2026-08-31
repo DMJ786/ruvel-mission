@@ -55,14 +55,19 @@ test.describe("Phase 3 complete three-organisation mission", () => {
           || text.startsWith("Executing inline script violates the following Content Security Policy directive 'script-src 'self''.");
         (known ? platformMessages : applicationErrors).push(text);
       });
-      monitoredPage.on("response", response => {
-        const type = response.headers()["content-type"] ?? "";
-        if (!/text|javascript|json/u.test(type)) return;
-        responseChecks.push(response.text().then(text => {
+      // Read bodies only after transfer completes. A response event can precede
+      // a navigation-aborted transfer whose body promise stays pending in CDP.
+      monitoredPage.on("requestfinished", request => {
+        responseChecks.push((async () => {
+          const response = await request.response();
+          if (!response) return;
+          const type = response.headers()["content-type"] ?? "";
+          if (!/text|javascript|json/u.test(type)) return;
+          const text = await response.text();
           check(text, "deployed HTML/JavaScript/API response"); check(JSON.stringify(response.headers()), "browser response headers");
           if (type.includes("text/html")) htmlOrigins.add(new URL(response.url()).origin);
           if (type.includes("javascript")) scriptOrigins.add(new URL(response.url()).origin);
-        }).catch(error => {
+        })().catch(error => {
           if (String(error).includes("SECRET_LEAK_DETECTED")) applicationErrors.push("Secret exposure in response");
           // Navigation may cancel response-body retrieval; functional assertions
           // and per-origin HTML/JS coverage below must still succeed.
@@ -155,6 +160,9 @@ test.describe("Phase 3 complete three-organisation mission", () => {
     await page.goto(brightUrl); await expect(page.locator("#capability-count")).toHaveText("2"); expect(await names(page)).not.toContain("change_plan");
     await expect(page.locator("#current-plan")).toHaveText("Standard Flex"); await expect(page.locator("#hardship-status")).toHaveText("None"); await expect(page.locator("#approval-card")).toBeHidden();
     await page.goto(civicUrl); await expect(page.locator("#capability-count")).toHaveText("2"); await expect(page.locator("#eligibility")).toHaveText("Unchecked"); await expect(page.locator("#claim-status")).toHaveText("None");
+    // End polling and release body reads tied to documents discarded during
+    // navigation before awaiting the complete evidence collector.
+    await page.close();
     await Promise.all(responseChecks);
     expect(htmlOrigins.size).toBe(4); expect(scriptOrigins.size).toBe(4); expect(applicationErrors).toEqual([]);
     const evidence = JSON.stringify({ platformMessages, htmlOrigins: [...htmlOrigins], scriptOrigins: [...scriptOrigins], secretLeakCheck: "PASS", auditEventCountBeforeReset: 19 }, null, 2);

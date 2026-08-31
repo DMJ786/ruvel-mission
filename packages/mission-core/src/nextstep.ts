@@ -14,7 +14,7 @@ const demoRoles: RoleMatch[] = [
 
 export function nextStepAction(state: MissionState, capability: NextStepCapability, input: Record<string, unknown>, now: number) {
   assertApproved(state);
-  // Old Phase 2 Passports remain readable, but never acquire new authority implicitly.
+  // Missing scopes never gain authority; stale signatures are rejected before this reducer.
   if (!state.passport.scopes.nextstep?.includes(capability)) {
     throw new MissionError("MISSION_SCOPE_DENIED", 403, { capability: `nextstep.${capability}` });
   }
