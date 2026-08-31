@@ -12,6 +12,7 @@ import type { DurableResponse } from "../src/types";
 const env: DurableEnv = {
   RUVEL_PASSPORT_SECRET: "test-passport-secret", RUVEL_SERVICE_SECRET: "test-service-secret",
   MISSION_ORIGIN: "https://mission.test", BRIGHTENERGY_ORIGIN: "https://bright.test", CIVICAID_ORIGIN: "https://civic.test",
+  NEXTSTEP_ORIGIN: "https://next.test",
 };
 let database: DatabaseSync, store: D1MissionStore, directory: string, now: number;
 let cookies: Record<string, string>;
@@ -27,7 +28,7 @@ function adapter(database: DatabaseSync): MissionDatabase {
     return statement;
   } };
 }
-const origins = { mission: env.MISSION_ORIGIN!, brightenergy: env.BRIGHTENERGY_ORIGIN!, civicaid: env.CIVICAID_ORIGIN! };
+const origins = { mission: env.MISSION_ORIGIN!, brightenergy: env.BRIGHTENERGY_ORIGIN!, civicaid: env.CIVICAID_ORIGIN!, nextstep: env.NEXTSTEP_ORIGIN! };
 async function send(site: DurableSite, path: string, body?: unknown, authenticated = true) {
   const request = new Request(`${origins[site]}${path}`, {
     method: body === undefined ? "GET" : "POST",

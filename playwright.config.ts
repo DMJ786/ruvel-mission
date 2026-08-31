@@ -7,6 +7,7 @@ export default defineConfig({
   // Assert readiness with a bounded network allowance, without sleeps or retries.
   expect: { timeout: 20_000 },
   fullyParallel: false,
+  retries: 0,
   workers: 1,
   use: {
     channel: "msedge",

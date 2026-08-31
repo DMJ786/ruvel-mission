@@ -81,6 +81,15 @@ importers:
         specifier: workspace:*
         version: link:../../packages/spike-core
 
+  apps/nextstep:
+    dependencies:
+      '@ruvel/mission-core':
+        specifier: workspace:*
+        version: link:../../packages/mission-core
+      '@ruvel/spike-core':
+        specifier: workspace:*
+        version: link:../../packages/spike-core
+
   apps/partner:
     dependencies:
       '@ruvel/spike-core':

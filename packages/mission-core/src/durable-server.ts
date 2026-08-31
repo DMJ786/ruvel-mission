@@ -1,10 +1,11 @@
 import { civicAction, civicDemoRecord, redactArguments } from "./civicaid";
+import { nextStepAction, nextStepDemoRecord } from "./nextstep";
 import { applyHardship, approveAction, approvePassport, completePlanChange, createInitialState, getAccountSummary, grantChangePlan, MissionError, requestPlanChange } from "./state";
 import { assertMissionHandle, D1MissionStore, type MissionDatabase, type MissionStore, type StoredMission } from "./storage";
 import { signPayload, signState, verifyPayload, verifyState } from "./token";
 import type { DurableAction, DurableResponse, MissionState } from "./types";
 
-export type DurableSite = "mission" | "brightenergy" | "civicaid";
+export type DurableSite = "mission" | "brightenergy" | "civicaid" | "nextstep";
 export type DurableEnv = {
   DB?: MissionDatabase;
   RUVEL_PASSPORT_SECRET?: string;
@@ -12,6 +13,7 @@ export type DurableEnv = {
   MISSION_ORIGIN?: string;
   BRIGHTENERGY_ORIGIN?: string;
   CIVICAID_ORIGIN?: string;
+  NEXTSTEP_ORIGIN?: string;
 };
 type Options = { store?: MissionStore; fetcher?: typeof fetch; now?: number };
 type Input = { missionId?: string; action?: DurableAction | "reset" | "resolve"; input?: Record<string, unknown>; site?: DurableSite };
@@ -20,11 +22,11 @@ function json(value: unknown, status = 200, extra: Record<string, string> = {}) 
   return new Response(JSON.stringify(value), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store", "Referrer-Policy": "no-referrer", ...extra } });
 }
 function configured(env: DurableEnv) {
-  if (!env.RUVEL_PASSPORT_SECRET || !env.RUVEL_SERVICE_SECRET || !env.MISSION_ORIGIN || !env.BRIGHTENERGY_ORIGIN || !env.CIVICAID_ORIGIN) throw new MissionError("SERVER_NOT_CONFIGURED", 503);
+  if (!env.RUVEL_PASSPORT_SECRET || !env.RUVEL_SERVICE_SECRET || !env.MISSION_ORIGIN || !env.BRIGHTENERGY_ORIGIN || !env.CIVICAID_ORIGIN || !env.NEXTSTEP_ORIGIN) throw new MissionError("SERVER_NOT_CONFIGURED", 503);
   return {
     secret: env.RUVEL_PASSPORT_SECRET,
     service: env.RUVEL_SERVICE_SECRET,
-    sites: { mission: env.MISSION_ORIGIN, brightenergy: env.BRIGHTENERGY_ORIGIN, civicaid: env.CIVICAID_ORIGIN },
+    sites: { mission: env.MISSION_ORIGIN, brightenergy: env.BRIGHTENERGY_ORIGIN, civicaid: env.CIVICAID_ORIGIN, nextstep: env.NEXTSTEP_ORIGIN },
   };
 }
 
@@ -42,6 +44,7 @@ function transition(site: DurableSite, state: MissionState, action: DurableActio
   if (action === "read_state") return { state, result: { status: "verified" } };
   if (site === "mission" && action === "approve_passport") return { state: approvePassport(state, now), result: { status: "approved" } };
   if (site === "civicaid" && (action === "check_eligibility" || action === "prepare_support_claim")) return civicAction(state, action, input, now);
+  if (site === "nextstep" && (action === "register_profile" || action === "match_roles")) return nextStepAction(state, action, input, now);
   if (site === "brightenergy") {
     switch (action) {
       case "get_account_summary": return getAccountSummary(state, now);
@@ -70,7 +73,7 @@ export async function handleDurableRequest(request: Request, env: DurableEnv, si
     if (url.pathname === "/api/config" && request.method === "GET") return json({ sites: config.sites });
     if (url.pathname === "/api/session" && request.method === "GET" && site !== "mission") {
       const session = await makeDemoSession(site, config.secret, now);
-      return json({ demo: true, signedIn: true, ...(site === "civicaid" ? { citizen: civicDemoRecord } : { customer: "Jamie Citizen", account: "•••• 4417" }) }, 200,
+      return json({ demo: true, signedIn: true, ...(site === "civicaid" ? { citizen: civicDemoRecord } : site === "nextstep" ? { citizen: nextStepDemoRecord } : { customer: "Jamie Citizen", account: "•••• 4417" }) }, 200,
         { "Set-Cookie": `__Host-ruvel-demo=${session}; Secure; HttpOnly; SameSite=Lax; Path=/; Max-Age=86400` });
     }
     if (request.method !== "POST") return json({ error: "METHOD_NOT_ALLOWED" }, 405);
@@ -83,7 +86,7 @@ export async function handleDurableRequest(request: Request, env: DurableEnv, si
     if (!["/api/internal", "/api/reset", "/api/action"].includes(url.pathname)) return json({ error: "NOT_FOUND" }, 404);
     if (internal && (site !== "mission" || request.headers.get("X-Ruvel-Service") !== config.service)) throw new MissionError("SERVICE_UNAUTHORIZED", 403);
     const actor = internal ? body.site : site;
-    if (actor !== "mission" && actor !== "brightenergy" && actor !== "civicaid") throw new MissionError("INVALID_SITE", 400);
+    if (actor !== "mission" && actor !== "brightenergy" && actor !== "civicaid" && actor !== "nextstep") throw new MissionError("INVALID_SITE", 400);
     const action = url.pathname === "/api/reset" ? "reset" : body.action;
     if (!action) throw new MissionError("ACTION_REQUIRED", 400);
 

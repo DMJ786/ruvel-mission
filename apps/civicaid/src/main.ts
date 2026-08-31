@@ -45,7 +45,7 @@ function render() {
   requireElement<HTMLElement>("#identifier-count").textContent = String(calls.reduce((count, call) => count + (call.identifierArgumentCount ?? 0), 0));
 }
 requireElement<HTMLButtonElement>("#return-mission").addEventListener("click", () => client.navigate("mission"));
-requireElement<HTMLButtonElement>("#reset-demo").addEventListener("click", () => { void client.reset().then(() => notice("Both organisations reset. Reapprove the Passport at Ruvel Mission.")).catch((error: unknown) => notice(String(error))); });
+requireElement<HTMLButtonElement>("#reset-demo").addEventListener("click", () => { void client.reset().then(() => notice("All three organisations reset. Reapprove the Passport at Ruvel Mission.")).catch((error: unknown) => notice(String(error))); });
 void client.initialize(true).catch((error: unknown) => notice(error instanceof Error ? error.message : "Unable to open mission"));
 client.observe((message) => { notice(message); if (/PASSPORT|MISSION_NOT_FOUND/u.test(message)) { state = undefined; for (const registration of registrations.values()) registration.unregister(); registrations.clear(); void sync(); } });
 window.addEventListener("beforeunload", () => { for (const registration of registrations.values()) registration.unregister(); });

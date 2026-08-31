@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="NextStep fictional employment support. One mission, your next opportunity." />
+    <title>NextStep · Employment Support</title>
+  </head>
+  <body>
+    <header class="masthead"><a class="brand" href="/">NextStep<span aria-hidden="true">↗</span></a><span class="demo-tag">FICTIONAL DEMO SERVICE</span></header>
+    <main>
+      <section class="hero"><p class="eyebrow">EMPLOYMENT SUPPORT</p><h1>Your next chapter<br />starts here.</h1><p>A little structure. A few possibilities.<br />A starting point you don't have to build alone.</p><span class="mission-tag">PARTICIPATING IN YOUR RUVEL MISSION</span></section>
+      <section class="layout">
+        <div class="stack">
+          <article class="profile card">
+            <div class="section-title"><div><p class="eyebrow">YOUR EMPLOYMENT PROFILE</p><h2>A familiar starting point.</h2></div><span id="profile-status" class="status">Not registered</span></div>
+            <dl><div><dt>Signed-in citizen</dt><dd>J. Citizen <small>Fictional session</small></dd></div><div><dt>Employment</dt><dd>Recently unemployed</dd></div><div><dt>Preferred area</dt><dd>Sydney</dd></div><div><dt>Role preference</dt><dd>Software / technology</dd></div><div><dt>Availability</dt><dd id="availability">Immediate</dd></div></dl>
+            <p class="quiet">Identity comes from NextStep's own signed-in demo session, not agent-supplied identifiers.</p>
+          </article>
+          <section class="opportunities" aria-labelledby="matches-title"><div class="section-title"><div><p class="eyebrow">POSSIBILITIES AHEAD</p><h2 id="matches-title">Your opportunities</h2></div><span id="match-count" class="quiet">None yet</span></div><div id="role-matches"><p class="empty">Register your profile, then ask your agent to find three suitable roles.</p></div></section>
+        </div>
+        <aside class="stack">
+          <article class="capabilities card"><p class="eyebrow">MISSION CAPABILITIES</p><h2>NextStep Site Tools</h2><div class="tool-count"><strong id="capability-count">0</strong><span id="webmcp-state">Checking WebMCP…</span></div><ul><li>✓ Register employment profile</li><li>✓ Find suitable roles</li></ul><p>Two small steps. No applications sent, no extra approval to manage.</p></article>
+          <article class="completion card" id="completion-card" hidden><p class="eyebrow">NEXTSTEP COMPLETE</p><h2>You have a starting point.</h2><p>Your profile is active and your demo opportunities are saved to the mission.</p></article>
+          <button id="return-mission" type="button">← Return to Mission</button>
+          <button id="reset-demo" type="button" class="secondary">Reset demo</button>
+        </aside>
+      </section>
+      <p id="notice" role="status" class="notice"></p>
+      <footer>Demo opportunities only. No real employers, vacancies or job applications.</footer>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

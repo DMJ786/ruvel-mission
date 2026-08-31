@@ -3,8 +3,8 @@ import path from "node:path";
 import { build } from "vite";
 
 const siteKind = process.argv[2];
-if (!["mission", "brightenergy", "civicaid"].includes(siteKind)) {
-  throw new Error("usage: node scripts/build-phase1-worker.mjs <mission|brightenergy|civicaid>");
+if (!["mission", "brightenergy", "civicaid", "nextstep"].includes(siteKind)) {
+  throw new Error("usage: node scripts/build-phase1-worker.mjs <mission|brightenergy|civicaid|nextstep>");
 }
 
 const rootDirectory = process.cwd();

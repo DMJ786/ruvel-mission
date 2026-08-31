@@ -2,6 +2,15 @@ export const BASE_CAPABILITIES = ["get_account_summary", "apply_hardship"] as co
 export const CHANGE_PLAN_CAPABILITY = "change_plan" as const;
 export const CIVIC_CAPABILITIES = ["check_eligibility", "prepare_support_claim"] as const;
 export type CivicCapability = (typeof CIVIC_CAPABILITIES)[number];
+export const NEXTSTEP_CAPABILITIES = ["register_profile", "match_roles"] as const;
+export type NextStepCapability = (typeof NEXTSTEP_CAPABILITIES)[number];
+export type RoleMatch = { title: string; location: string; workMode: "Hybrid" | "Remote"; demo: true };
+export type NextStepMissionState = {
+  status: "not_started" | "active" | "completed";
+  profileStatus: "not_registered" | "active";
+  availability: "immediate";
+  roleMatches: RoleMatch[];
+};
 
 export type Capability = (typeof BASE_CAPABILITIES)[number] | typeof CHANGE_PLAN_CAPABILITY;
 export type AuditKind =
@@ -32,7 +41,7 @@ export type MissionPassport = {
   issuedAt: number;
   expiresAt: number;
   approved: boolean;
-  scopes: { brightenergy: Capability[]; civicaid: CivicCapability[] };
+  scopes: { brightenergy: Capability[]; civicaid: CivicCapability[]; nextstep: NextStepCapability[] };
   disclosures: { allowed: string[]; forbidden: string[] };
 };
 
@@ -55,6 +64,7 @@ export type MissionState = {
     approvals: Record<string, Approval>;
   };
   audit: AuditEvent[];
+  nextstep: NextStepMissionState;
   civicaid: {
     eligibility: "unchecked" | "eligible";
     estimatedFortnightlySupport: number | null;
@@ -73,7 +83,7 @@ export type ActionName =
   | "change_plan"
   | "approve_action";
 
-export type DurableAction = ActionName | CivicCapability;
+export type DurableAction = ActionName | CivicCapability | NextStepCapability;
 export type DurableResponse = {
   missionId: string;
   revision: number;
@@ -81,7 +91,7 @@ export type DurableResponse = {
   updatedAt: string;
   state: MissionState;
   result: Record<string, unknown>;
-  sites: { mission: string; brightenergy: string; civicaid: string };
+  sites: { mission: string; brightenergy: string; civicaid: string; nextstep: string };
 };
 
 export type ActionRequest = {

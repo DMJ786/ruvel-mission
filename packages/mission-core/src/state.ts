@@ -2,6 +2,7 @@ import {
   BASE_CAPABILITIES,
   CHANGE_PLAN_CAPABILITY,
   CIVIC_CAPABILITIES,
+  NEXTSTEP_CAPABILITIES,
   type Approval,
   type AuditEvent,
   type AuditKind,
@@ -45,7 +46,7 @@ export function createInitialState(now: number): MissionState {
       issuedAt: now,
       expiresAt: now + 60 * 60 * 1000,
       approved: false,
-      scopes: { brightenergy: [...BASE_CAPABILITIES], civicaid: [...CIVIC_CAPABILITIES] },
+      scopes: { brightenergy: [...BASE_CAPABILITIES], civicaid: [...CIVIC_CAPABILITIES], nextstep: [...NEXTSTEP_CAPABILITIES] },
       disclosures: {
         allowed: ["employment disruption", "account assistance status", "plan outcome", "support claim status"],
         forbidden: ["government identifier", "full account number", "payment credentials"],
@@ -58,6 +59,7 @@ export function createInitialState(now: number): MissionState {
       approvals: {},
     },
     civicaid: { eligibility: "unchecked", estimatedFortnightlySupport: null, claim: "none", claimId: null, fields: [] },
+    nextstep: { status: "not_started", profileStatus: "not_registered", availability: "immediate", roleMatches: [] },
     audit: [],
   };
   return append(state, now, "mission_started", "job_loss");

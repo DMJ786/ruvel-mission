@@ -25,7 +25,7 @@
         <article class="card passport">
           <div class="card-heading"><div><p class="eyebrow">MISSION PASSPORT</p><h2>Bounded authority</h2></div><span id="passport-status" class="status">Not issued</span></div>
           <p>Shares only the minimum mission context. Identity and account details stay with each participating site.</p>
-          <dl><div><dt>CivicAid scopes</dt><dd id="civic-scope-list">—</dd></div><div><dt>BrightEnergy scopes</dt><dd id="scope-list">—</dd></div><div><dt>Version</dt><dd id="passport-version">—</dd></div></dl>
+          <dl><div><dt>CivicAid scopes</dt><dd id="civic-scope-list">—</dd></div><div><dt>BrightEnergy scopes</dt><dd id="scope-list">—</dd></div><div><dt>NextStep scopes</dt><dd id="nextstep-scope-list">—</dd></div><div><dt>Version</dt><dd id="passport-version">—</dd></div></dl>
           <button id="approve-passport" type="button" disabled>Approve Passport</button>
         </article>
         <article class="card partner">
@@ -40,8 +40,14 @@
           <ul id="outcomes" class="outcomes"></ul>
           <button id="continue-partner" type="button" disabled>Continue to BrightEnergy <span aria-hidden="true">→</span></button>
         </article>
+        <article class="card partner">
+          <div class="card-heading"><div><p class="eyebrow">MISSION STEP 3</p><h2>NextStep</h2></div><span id="nextstep-status" class="status">Waiting</span></div>
+          <p>Build an employment-support profile and find a few possibilities for what comes next.</p>
+          <ul id="nextstep-outcomes" class="outcomes"></ul>
+          <button id="continue-nextstep" type="button" disabled>Continue to NextStep →</button>
+        </article>
       </section>
-      <p class="quiet">NextStep · NOT STARTED — outside Phase 2</p>
+      <section class="card" id="mission-completion" hidden><p class="eyebrow">MISSION READY TO COMPLETE</p><h2>Three organisations. One step forward.</h2><p>Support prepared. Energy protected. Employment profile active.</p><p class="quiet">All outcomes and opportunities are fictional demo data.</p></section>
       <section class="card activity">
         <div class="card-heading"><div><p class="eyebrow">MISSION ACTIVITY</p><h2>Audit trail</h2></div><span id="event-count" class="quiet">0 events</span></div>
         <ol id="audit-list"><li class="empty">Start a mission to begin the trace.</li></ol>

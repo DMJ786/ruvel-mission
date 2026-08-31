@@ -1,0 +1,8 @@
+{
+  "name": "@ruvel/nextstep", "version": "0.0.0", "private": true, "type": "module",
+  "dependencies": { "@ruvel/mission-core": "workspace:*", "@ruvel/spike-core": "workspace:*" },
+  "scripts": {
+    "build": "vite build --configLoader runner && cd ../.. && node scripts/build-phase1-worker.mjs nextstep",
+    "dev": "vite --configLoader runner --port 4183 --strictPort", "typecheck": "tsc --noEmit"
+  }
+}

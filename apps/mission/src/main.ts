@@ -10,6 +10,16 @@ function render() {
   const approved = state?.passport.approved === true;
   const complete = state?.brightenergy.plan === "saver_flex" && state?.brightenergy.hardshipStatus === "temporary_relief";
   const civicComplete = state?.civicaid.claim === "prepared";
+  const nextComplete = state?.nextstep?.status === "completed";
+  const nextAuthorized = approved && (state?.passport.scopes.nextstep?.length ?? 0) === 2;
+  requireElement<HTMLElement>("#nextstep-status").textContent = nextComplete ? "Complete" : nextAuthorized ? "Ready" : approved ? "Reset required" : "Waiting";
+  requireElement<HTMLElement>("#nextstep-status").dataset.state = nextComplete ? "complete" : nextAuthorized ? "ok" : "waiting";
+  requireElement<HTMLButtonElement>("#continue-nextstep").disabled = !nextAuthorized;
+  requireElement<HTMLElement>("#nextstep-scope-list").textContent = state?.passport.scopes.nextstep?.join(", ") ?? "—";
+  const nextOutcomes = requireElement<HTMLUListElement>("#nextstep-outcomes"); nextOutcomes.replaceChildren();
+  if (state?.nextstep?.profileStatus === "active") addOutcome(nextOutcomes, "employment profile active");
+  if (nextComplete) addOutcome(nextOutcomes, `${state?.nextstep.roleMatches.length} demo opportunities found`);
+  requireElement<HTMLElement>("#mission-completion").hidden = !(civicComplete && complete && nextComplete);
   requireElement<HTMLElement>("#civic-status").textContent = civicComplete ? "Complete" : approved ? "Ready" : "Waiting";
   requireElement<HTMLElement>("#civic-status").dataset.state = civicComplete ? "complete" : approved ? "ok" : "waiting";
   requireElement<HTMLButtonElement>("#continue-civic").disabled = !approved;
@@ -59,10 +69,11 @@ function notice(message: string) { requireElement<HTMLElement>("#notice").textCo
 
 function run(task: Promise<unknown>, message: string) { void task.then(() => notice(message)).catch((error: unknown) => notice(error instanceof Error ? error.message : "Action failed")); }
 requireElement<HTMLButtonElement>("#start-mission").addEventListener("click", () => run(client.reset(true), "Mission created. Review the Passport."));
-requireElement<HTMLButtonElement>("#reset-demo").addEventListener("click", () => run(client.reset(), "Both organisations reset to their clean state."));
+requireElement<HTMLButtonElement>("#reset-demo").addEventListener("click", () => run(client.reset(), "All three organisations reset to their clean state."));
 requireElement<HTMLButtonElement>("#approve-passport").addEventListener("click", () => run(client.action("approve_passport"), "Mission Passport approved."));
 requireElement<HTMLButtonElement>("#continue-partner").addEventListener("click", () => client.navigate("brightenergy"));
 requireElement<HTMLButtonElement>("#continue-civic").addEventListener("click", () => client.navigate("civicaid"));
+requireElement<HTMLButtonElement>("#continue-nextstep").addEventListener("click", () => client.navigate("nextstep"));
 
 render();
 void client.initialize().catch((error: unknown) => notice(error instanceof Error ? error.message : "Unable to restore mission"));

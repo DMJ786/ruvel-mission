@@ -50,6 +50,8 @@ export function redactArguments(input: Record<string, unknown>) {
     if (identityKeys.test(key.replaceAll("_", ""))) {
       identifierArgumentCount += 1;
       redactedArgs[key] = "[REDACTED]";
+    } else if (key === "limit" && typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 3) {
+      redactedArgs[key] = value;
     } else if (key === "program" || key === "plan") {
       redactedArgs[key] = value === "temporary_relief" || value === "saver_flex" ? value : "[REDACTED]";
     } else redactedArgs[key] = "[REDACTED]";

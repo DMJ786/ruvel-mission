@@ -121,7 +121,7 @@ requireElement<HTMLButtonElement>("#request-change").addEventListener("click", (
 requireElement<HTMLButtonElement>("#approve-action").addEventListener("click", () => { const pending = pendingApproval(); if (pending) act("approve_action", { approvalId: pending.id }, "Approved. Ask the agent to continue with the approval ID."); });
 requireElement<HTMLButtonElement>("#not-now").addEventListener("click", () => { requireElement<HTMLElement>("#approval-card").hidden = true; notice("Plan change left pending. No account change was made."); });
 requireElement<HTMLButtonElement>("#return-mission").addEventListener("click", () => client.navigate("mission"));
-requireElement<HTMLButtonElement>("#reset-demo").addEventListener("click", () => { void client.reset().then(() => notice("Both organisations reset. Approve the Passport again at Ruvel Mission.")).catch((error: unknown) => notice(error instanceof Error ? error.message : "Reset failed")); });
+requireElement<HTMLButtonElement>("#reset-demo").addEventListener("click", () => { void client.reset().then(() => notice("All three organisations reset. Approve the Passport again at Ruvel Mission.")).catch((error: unknown) => notice(error instanceof Error ? error.message : "Reset failed")); });
 
 void restore().catch((error: unknown) => notice(error instanceof Error ? error.message : "Unable to open mission"));
 window.addEventListener("beforeunload", () => { for (const registration of registrations.values()) registration.unregister(); });

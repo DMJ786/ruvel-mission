@@ -1,5 +1,14 @@
 # Architecture decisions
 
+## Deployment note: Phase 3 credential rotation (not an architecture change)
+
+- Date: 2026-09-01
+- User explicitly approved rotating the shared demo signing and service secrets on all four Sites projects.
+
+Sites returns existing secrets masked, so the new NextStep site cannot reuse their plaintext. Generate two independent high-entropy values and configure the same pair as server-only secret bindings on Ruvel, CivicAid, BrightEnergy and NextStep before validation. Never emit their values, place them in artifacts or URLs, or commit them. Validation records contain only non-reversible fingerprints and pass/fail findings.
+
+Previously signed missions are invalid/stale after rotation. Their D1 rows may remain, but no old-key fallback, key-versioning or silent re-signing is introduced. A clean reset/recreated mission starts unapproved and requires fresh Passport approval. Explicit regression A checks an old signed Passport is rejected without rewriting its record; regression B checks a newly approved Passport and rotated service calls work at all three partners. The same tests are also run against the public deployments using a control mission created before rotation. This is deployment credential maintenance; the accepted D1, signed-session and authority architecture is unchanged.
+
 ## ADR-003: Preserve security boundaries during public Phase 2 validation
 
 - Status: Accepted for the bounded Phase 2 deployment
