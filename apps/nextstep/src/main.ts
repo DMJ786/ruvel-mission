@@ -1,4 +1,5 @@
 import { MissionClient } from "../../../packages/mission-core/src/browser-client";
+import { friendlyMissionError, withActionFeedback } from "../../../packages/mission-core/src/presentation";
 import { nextStepToolDefinition } from "../../../packages/mission-core/src/nextstep-tools";
 import { NEXTSTEP_CAPABILITIES, type MissionState, type NextStepCapability } from "../../../packages/mission-core/src/types";
 import { registerOwnedTool, requireElement, type OwnedRegistration } from "../../../packages/spike-core/src/index";
@@ -7,13 +8,13 @@ import "./styles.css";
 let state: MissionState | undefined;
 const registrations = new Map<NextStepCapability, OwnedRegistration>();
 const client = new MissionClient(async response => { state = response.state; await sync(); render(); });
-function notice(message: string) { requireElement<HTMLElement>("#notice").textContent = message; }
+function notice(message: string) { requireElement<HTMLElement>("#notice").textContent = friendlyMissionError(message); }
 async function sync() {
   const desired = state?.passport.approved ? state.passport.scopes.nextstep ?? [] : [];
   for (const [name, registration] of registrations) if (!desired.includes(name)) { registration.unregister(); registrations.delete(name); }
   if (document.modelContext) for (const name of NEXTSTEP_CAPABILITIES) {
     if (!desired.includes(name) || registrations.has(name)) continue;
-    const registration = registerOwnedTool(document.modelContext, nextStepToolDefinition(name, input => client.action(name, input)));
+    const registration = registerOwnedTool(document.modelContext, nextStepToolDefinition(name, input => withActionFeedback(name, () => client.action(name, input), notice)));
     try { await registration.ready; registrations.set(name, registration); } catch (error) { registration.unregister(); notice(String(error)); }
   }
   requireElement<HTMLElement>("#capability-count").textContent = String(registrations.size);

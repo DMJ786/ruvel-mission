@@ -1,5 +1,6 @@
 import { CHANGE_PLAN_CAPABILITY, type ActionName, type Capability, type MissionState } from "../../../packages/mission-core/src/index";
 import { MissionClient } from "../../../packages/mission-core/src/browser-client";
+import { friendlyMissionError, withActionFeedback } from "../../../packages/mission-core/src/presentation";
 import { registerOwnedTool, requireElement, type OwnedRegistration, type ToolDefinition } from "../../../packages/spike-core/src/index";
 import "./styles.css";
 
@@ -8,7 +9,7 @@ const registrations = new Map<Capability, OwnedRegistration>();
 const client = new MissionClient(async (response) => { state = response.state; await syncRegistrations(); render(); });
 
 async function api(action: ActionName, input: Record<string, unknown> = {}) {
-  return client.action(action, input);
+  return withActionFeedback(action, () => client.action(action, input), notice);
 }
 
 async function restore() {
@@ -79,7 +80,11 @@ async function syncRegistrations() {
 }
 
 function updateCount() {
-  requireElement<HTMLElement>("#capability-count").textContent = String(registrations.size);
+  const count = requireElement<HTMLElement>("#capability-count");
+  const changed = count.textContent !== String(registrations.size);
+  count.textContent = String(registrations.size);
+  count.setAttribute("aria-live", "polite");
+  if (changed && !matchMedia("(prefers-reduced-motion: reduce)").matches) count.animate([{ opacity: .45, transform: "translateY(3px)" }, { opacity: 1, transform: "translateY(0)" }], { duration: 240 });
 }
 
 function pendingApproval() {
@@ -95,7 +100,7 @@ function render() {
   requireElement<HTMLElement>("#hardship-status").textContent = state.brightenergy.hardshipStatus === "temporary_relief" ? "Temporary relief" : "None";
   const change = requireElement<HTMLLIElement>("#change-capability");
   change.classList.toggle("granted", granted); change.querySelector("span")!.textContent = granted ? "✓" : "✕";
-  requireElement<HTMLElement>("#authority-state").textContent = granted ? "Granted — this mission only" : "Not granted for this mission";
+  requireElement<HTMLElement>("#authority-state").textContent = granted ? "Change plan granted for this Mission only." : "BrightEnergy hasn't granted plan changes for this Mission.";
   requireElement<HTMLButtonElement>("#grant-capability").disabled = granted || !state.passport.approved;
   requireElement<HTMLButtonElement>("#request-change").disabled = !granted || complete || !state.passport.approved;
   const pending = pendingApproval();
@@ -113,7 +118,7 @@ function render() {
   }
 }
 
-function notice(message: string) { requireElement<HTMLElement>("#notice").textContent = message; }
+function notice(message: string) { requireElement<HTMLElement>("#notice").textContent = friendlyMissionError(message); }
 function act(action: ActionName, input: Record<string, unknown>, message: string) { void api(action, input).then(() => notice(message)).catch((error: unknown) => notice(error instanceof Error ? error.message : "Action failed")); }
 
 requireElement<HTMLButtonElement>("#grant-capability").addEventListener("click", () => act("grant_change_plan", {}, "Change plan granted for this mission. Site Tools refreshed."));

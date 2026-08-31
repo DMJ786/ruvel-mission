@@ -4,6 +4,7 @@ import { applyHardship, approveAction, approvePassport, completePlanChange, crea
 import { assertMissionHandle, D1MissionStore, type MissionDatabase, type MissionStore, type StoredMission } from "./storage";
 import { signPayload, signState, verifyPayload, verifyState } from "./token";
 import type { DurableAction, DurableResponse, MissionState } from "./types";
+import { completeMission, deriveReceipt } from "./receipt";
 
 export type DurableSite = "mission" | "brightenergy" | "civicaid" | "nextstep";
 export type DurableEnv = {
@@ -42,6 +43,8 @@ async function requireDemoSession(request: Request, site: DurableSite, secret: s
 
 function transition(site: DurableSite, state: MissionState, action: DurableAction, input: Record<string, unknown>, now: number) {
   if (action === "read_state") return { state, result: { status: "verified" } };
+  if (site === "mission" && action === "complete_mission") return completeMission(state, now);
+  if (state.completion) throw new MissionError("MISSION_COMPLETED", 409);
   if (site === "mission" && action === "approve_passport") return { state: approvePassport(state, now), result: { status: "approved" } };
   if (site === "civicaid" && (action === "check_eligibility" || action === "prepare_support_claim")) return civicAction(state, action, input, now);
   if (site === "nextstep" && (action === "register_profile" || action === "match_roles")) return nextStepAction(state, action, input, now);
@@ -155,7 +158,7 @@ export async function handleDurableRequest(request: Request, env: DurableEnv, si
       updatedAt = new Date(now).toISOString();
       if (!await store.save({ ...record, revision, updatedAt, signedState: await signState(outcome.state, config.secret) }, record.revision)) throw new MissionError("MISSION_CONFLICT_RETRY", 409);
     }
-    return json({ missionId: record.id, revision, createdAt: record.createdAt, updatedAt, state: outcome.state, result: outcome.result, sites: config.sites });
+    return json({ missionId: record.id, revision, createdAt: record.createdAt, updatedAt, state: outcome.state, result: outcome.result, sites: config.sites, receipt: deriveReceipt(outcome.state, config.sites) });
   } catch (error) {
     if (error instanceof MissionError) return json({ error: error.code, ...error.detail }, error.status);
     console.error("Mission request failed", error instanceof Error ? error.name : "unknown");

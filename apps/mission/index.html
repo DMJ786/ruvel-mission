@@ -3,30 +3,44 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="One mission carried across independent WebMCP sites." />
-    <title>Ruvel Mission · Job loss</title>
+    <meta name="description" content="Say it once. One mission across independent WebMCP websites, with bounded authority and an accountable Mission Receipt." />
+    <title>Ruvel Mission · Say it once.</title>
+    <meta property="og:title" content="Ruvel Mission · Say it once." />
+    <meta property="og:description" content="Life crosses organisations. Websites don't. One mission, independent sites, accountable outcomes." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://ruvel-phase1-mission-dhili.jmsd0811.chatgpt.site/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Ruvel Mission · Say it once." />
+    <meta name="twitter:description" content="Life crosses organisations. Websites don't. One mission, independent sites, accountable outcomes." />
+    <meta name="twitter:image" content="https://ruvel-phase1-mission-dhili.jmsd0811.chatgpt.site/og.png" />
   </head>
   <body>
     <main>
       <header class="masthead">
         <a class="brand" href="/" aria-label="Ruvel Mission home">RUVEL <span>MISSION</span></a>
-        <p>One mission carried across independent WebMCP sites.</p>
+        <p>Life crosses organisations. Websites don't.</p>
       </header>
+      <div id="mission-view">
       <section class="hero">
-        <p class="eyebrow">ACTIVE MISSION</p>
-        <h1>Job loss</h1>
+        <p class="eyebrow">ONE OUTCOME. INDEPENDENT ORGANISATIONS.</p>
+        <h1>Say it once.</h1>
         <p class="intent">“I lost my job yesterday. Help me.”</p>
+        <p class="mission-label">YOUR MISSION <strong>Job loss recovery</strong></p>
         <div class="actions">
           <button id="start-mission" type="button">Start mission</button>
           <button id="reset-demo" class="secondary" type="button">Reset demo</button>
         </div>
+        <details class="demo-guide"><summary>Demo Guide</summary><p>Start Mission → Approve Passport → CivicAid → BrightEnergy → NextStep → Mission Receipt.</p><p>Use each page’s navigation buttons. Your agent uses that site’s real WebMCP tools.</p></details>
       </section>
+      <nav class="journey" aria-label="Mission progress"><span id="progress-start">Passport</span><span id="progress-civic">CivicAid</span><span id="progress-bright">BrightEnergy</span><span id="progress-next">NextStep</span><span id="progress-complete">Receipt</span></nav>
       <section class="grid">
         <article class="card passport">
-          <div class="card-heading"><div><p class="eyebrow">MISSION PASSPORT</p><h2>Bounded authority</h2></div><span id="passport-status" class="status">Not issued</span></div>
-          <p>Shares only the minimum mission context. Identity and account details stay with each participating site.</p>
-          <dl><div><dt>CivicAid scopes</dt><dd id="civic-scope-list">—</dd></div><div><dt>BrightEnergy scopes</dt><dd id="scope-list">—</dd></div><div><dt>NextStep scopes</dt><dd id="nextstep-scope-list">—</dd></div><div><dt>Version</dt><dd id="passport-version">—</dd></div></dl>
+          <div class="card-heading"><div><p class="eyebrow">MISSION PASSPORT</p><h2>Authority before execution.</h2></div><span id="passport-status" class="status">Not issued</span></div>
+          <p>Job loss recovery. Approve a bounded starting point; each site still verifies every action.</p>
+          <div class="passport-scopes"><h3>CivicAid</h3><p>✓ Check eligibility<br>✓ Prepare support claim</p><h3>BrightEnergy</h3><p>✓ Read account<br>✓ Apply hardship<br><span id="passport-plan-scope">○ Change plan — ask me when needed</span></p><h3>NextStep</h3><p>✓ Register profile<br>✓ Match roles</p></div>
+          <details class="passport-technical"><summary>Technical scopes</summary><dl><div><dt>CivicAid scopes</dt><dd id="civic-scope-list">—</dd></div><div><dt>BrightEnergy scopes</dt><dd id="scope-list">—</dd></div><div><dt>NextStep scopes</dt><dd id="nextstep-scope-list">—</dd></div><div><dt>Version</dt><dd id="passport-version">—</dd></div></dl></details>
           <button id="approve-passport" type="button" disabled>Approve Passport</button>
+          <p class="passport-footnote">Humans delegate outcomes. Sites retain authority. Agents coordinate capabilities.</p>
         </article>
         <article class="card partner">
           <div class="card-heading"><div><p class="eyebrow">MISSION STEP 1</p><h2>CivicAid</h2></div><span id="civic-status" class="status">Waiting</span></div>
@@ -47,11 +61,14 @@
           <button id="continue-nextstep" type="button" disabled>Continue to NextStep →</button>
         </article>
       </section>
-      <section class="card" id="mission-completion" hidden><p class="eyebrow">MISSION READY TO COMPLETE</p><h2>Three organisations. One step forward.</h2><p>Support prepared. Energy protected. Employment profile active.</p><p class="quiet">All outcomes and opportunities are fictional demo data.</p></section>
+      <section class="card completion-card" id="mission-completion" hidden><p class="eyebrow">MISSION READY TO COMPLETE</p><h2>Three organisations.<br>One step forward.</h2><p>Support prepared. Energy protected. Employment profile active.</p><button id="complete-mission" type="button">Complete Mission</button><p class="quiet">All outcomes and opportunities are fictional demo data.</p></section>
+      <section class="card completion-card" id="mission-finished" hidden><p class="eyebrow">MISSION COMPLETE</p><h2>Say it once.<br>See what happened.</h2><p id="finished-summary"></p><button id="view-receipt" type="button" aria-controls="receipt-view" aria-expanded="false">View Mission Receipt</button></section>
       <section class="card activity">
-        <div class="card-heading"><div><p class="eyebrow">MISSION ACTIVITY</p><h2>Audit trail</h2></div><span id="event-count" class="quiet">0 events</span></div>
-        <ol id="audit-list"><li class="empty">Start a mission to begin the trace.</li></ol>
+        <div class="card-heading"><div><p class="eyebrow">MISSION ACTIVITY</p><h2>Your progress</h2></div><span id="event-count" class="quiet">0 events</span></div>
+        <p id="latest-activity">Start a mission to begin.</p><details><summary>View activity timeline</summary><ol id="audit-list"><li class="empty">Start a mission to begin the trace.</li></ol></details>
       </section>
+      </div>
+      <section id="receipt-view" hidden aria-label="Mission Receipt"><div class="receipt-controls"><button id="close-receipt" class="secondary" type="button">← Back to Mission</button><p>Retainable summary · bearer handle masked · fictional demo</p></div><article id="mission-receipt" class="receipt-paper" tabindex="-1"></article></section>
       <p id="notice" class="notice" role="status"></p>
     </main>
     <script type="module" src="/src/main.ts"></script>

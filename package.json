@@ -7,7 +7,7 @@
     "build": "pnpm -r build",
     "dev": "concurrently -k -n MISSION,BRIGHTENERGY,CIVICAID,NEXTSTEP -c cyan,green,blue,magenta \"pnpm --filter @ruvel/mission-hub dev\" \"pnpm --filter @ruvel/brightenergy dev\" \"pnpm --filter @ruvel/civicaid dev\" \"pnpm --filter @ruvel/nextstep dev\"",
     "lint": "eslint .",
-    "test": "vitest run packages/spike-core/tests/index.test.ts packages/mission-core/tests/phase1.test.ts packages/mission-core/tests/phase2.test.ts packages/mission-core/tests/phase3.test.ts",
+    "test": "vitest run packages/spike-core/tests/index.test.ts packages/mission-core/tests/phase1.test.ts packages/mission-core/tests/phase2.test.ts packages/mission-core/tests/phase3.test.ts packages/mission-core/tests/phase4.test.ts",
     "test:e2e": "playwright test",
     "typecheck": "pnpm -r typecheck"
   },

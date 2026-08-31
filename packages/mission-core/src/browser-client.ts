@@ -42,10 +42,10 @@ export class MissionClient {
     return task;
   }
   navigate(site: keyof DurableResponse["sites"]) {
-    if (!this.sites || !this.missionId) throw new Error("Mission is not ready");
+    if (!this.sites || (!this.missionId && site !== "mission")) throw new Error("Mission is not ready");
     const url = new URL(this.sites[site]);
     if (url.protocol !== "https:") throw new Error("Trusted HTTPS is required");
-    url.searchParams.set("mission", this.missionId);
+    if (this.missionId) url.searchParams.set("mission", this.missionId);
     location.assign(url.href);
   }
   observe(onError: (message: string) => void) {

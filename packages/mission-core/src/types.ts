@@ -1,3 +1,5 @@
+import type { MissionReceipt } from "./receipt";
+
 export const BASE_CAPABILITIES = ["get_account_summary", "apply_hardship"] as const;
 export const CHANGE_PLAN_CAPABILITY = "change_plan" as const;
 export const CIVIC_CAPABILITIES = ["check_eligibility", "prepare_support_claim"] as const;
@@ -15,6 +17,7 @@ export type NextStepMissionState = {
 export type Capability = (typeof BASE_CAPABILITIES)[number] | typeof CHANGE_PLAN_CAPABILITY;
 export type AuditKind =
   | "mission_started"
+  | "mission_completed"
   | "passport_approved"
   | "capability_granted"
   | "tool_invoked"
@@ -56,6 +59,7 @@ export type Approval = {
 };
 
 export type MissionState = {
+  completion?: { completedAt: number };
   passport: MissionPassport;
   brightenergy: {
     plan: "standard_flex" | "saver_flex";
@@ -83,7 +87,7 @@ export type ActionName =
   | "change_plan"
   | "approve_action";
 
-export type DurableAction = ActionName | CivicCapability | NextStepCapability;
+export type DurableAction = ActionName | CivicCapability | NextStepCapability | "complete_mission";
 export type DurableResponse = {
   missionId: string;
   revision: number;
@@ -92,6 +96,7 @@ export type DurableResponse = {
   state: MissionState;
   result: Record<string, unknown>;
   sites: { mission: string; brightenergy: string; civicaid: string; nextstep: string };
+  receipt?: MissionReceipt | null;
 };
 
 export type ActionRequest = {

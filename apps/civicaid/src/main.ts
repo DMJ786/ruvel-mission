@@ -1,4 +1,5 @@
 import { MissionClient } from "../../../packages/mission-core/src/browser-client";
+import { friendlyMissionError, withActionFeedback } from "../../../packages/mission-core/src/presentation";
 import { CIVIC_CAPABILITIES, type CivicCapability, type MissionState } from "../../../packages/mission-core/src/types";
 import { registerOwnedTool, requireElement, type OwnedRegistration } from "../../../packages/spike-core/src/index";
 import "./styles.css";
@@ -6,7 +7,7 @@ import "./styles.css";
 let state: MissionState | undefined;
 const registrations = new Map<CivicCapability, OwnedRegistration>();
 const client = new MissionClient(async (response) => { state = response.state; await sync(); render(); });
-function notice(message: string) { requireElement<HTMLElement>("#notice").textContent = message; }
+function notice(message: string) { requireElement<HTMLElement>("#notice").textContent = friendlyMissionError(message); }
 async function sync() {
   const desired = state?.passport.approved ? state.passport.scopes.civicaid : [];
   for (const [name, registration] of registrations) if (!desired.includes(name)) { registration.unregister(); registrations.delete(name); }
@@ -19,7 +20,7 @@ async function sync() {
         : "Prepare, but do not submit, a fictional support claim from CivicAid's signed-in session, site records and mission-authorised disclosures. Check eligibility first. No identity arguments are needed.",
       inputSchema: { type: "object", properties: {}, additionalProperties: false },
       annotations: { readOnlyHint: name === "check_eligibility" },
-      execute: async (input) => client.action(name, input),
+      execute: async (input) => withActionFeedback(name, () => client.action(name, input), notice),
     });
     try { await registration.ready; registrations.set(name, registration); } catch (error) { registration.unregister(); notice(String(error)); }
   }

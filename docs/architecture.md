@@ -1,4 +1,4 @@
-# Ruvel Mission architecture — Phase 3
+# Ruvel Mission architecture — Phase 4
 
 **One mission carried across independent WebMCP sites.**
 
@@ -8,76 +8,113 @@ Life crosses organisations. Websites don't.
 >
 > Permission isn't a prompt. It's whether the capability exists.
 
-## Multi-page WebMCP
-
-Ruvel, CivicAid, BrightEnergy and NextStep are four separate top-level HTTPS sites. Each partner owns its registrations, fictional session, interface and server-side policy. The hub never exposes another site's tools. The journey is Ruvel → CivicAid → Ruvel → BrightEnergy → Ruvel → NextStep → Ruvel. CivicAid retains session-local identity; BrightEnergy retains the proven account, hardship, dynamic grant and two-step approval interaction. NextStep adds two simple employment-support capabilities using the same contract.
-
-The original iframe/Mirror architecture was rejected on Phase 0 runtime evidence: cross-origin frames lacked `document.modelContext`, while top-level registration and execution worked. The observed ~24-second tool-call timeout still requires independent human approval and a later continuation. [The spike history](./webmcp-spike.md) and [Phase 1 report](./phase1-report.md) are preserved.
-
-## Durable Mission State
+## Product and trust boundaries
 
 ```text
-Top-level site UI / WebMCP
-  │ same-origin action: opaque mission handle + minimal tool arguments
-  ▼
-Partner server ── signed site-local fictional session
-  │ authenticated HTTP: resolve canonical record, verify Passport
-  ▼
-Ruvel mission service ── verify current Passport again
-  │ prepared SQL + compare-and-swap revision
-  ▼
-Sites-managed D1: canonical signed mission + timestamps + revision
+                         opaque ?mission=m_… navigation
+        ┌──────────────────────┼──────────────────────┐
+        ▼                      ▼                      ▼
+  CivicAid HTTPS       BrightEnergy HTTPS       NextStep HTTPS
+  own session          own session              own session
+  2 native tools       2 → 3 native tools       2 native tools
+        │                      │                      │
+        └──── authenticated service calls + current Passport ────┐
+                                                                  ▼
+Ruvel Mission HTTPS ── Passport / progress / completion ── canonical D1 record
+        ▲                                                         │
+        └──────── Mission Receipt derived from state + audit ─────┘
 ```
 
-The hub's logical D1 binding is `DB`. Sites provisions and connects the actual database; no Supabase account or extra service is required. `apps/mission/db/schema.ts` defines the table and `apps/mission/drizzle` holds its generated migration. One record contains the signed Passport, all three partner states, BrightEnergy approval records and the central audit. Phase 3 extends the existing JSON state without a database-schema migration or restructuring the proven state shape. Indexed lookup uses the primary-key handle; no speculative secondary indexes are added.
+Ruvel, CivicAid, BrightEnergy and NextStep are four separate top-level HTTPS origins. Each partner owns its interface, native WebMCP registrations, fictional signed session and server-side policy. Ruvel owns mission creation, the bounded Passport, cross-organisation progress, central audit, terminal completion and the final Receipt. No site exposes another site's tools.
 
-Navigation contains only `?mission=m_<32 random hexadecimal characters>`. The handle is generated from `crypto.randomUUID()` and has no semantic user information. No Passport, approval, state, audit, disclosure policy, or user data is serialized into URLs. The browser does not persist mission data in local/session storage. Refreshes and new browser contexts resolve the database record again.
+The original iframe/Mirror architecture remains rejected on Phase 0 runtime evidence: top-level WebMCP registration and execution worked, while the tested cross-origin frame had no usable `document.modelContext`. The top-level journey is Ruvel → CivicAid → Ruvel → BrightEnergy → Ruvel → NextStep → Ruvel. The observed tool-call timeout also requires BrightEnergy approval to be an immediate pending response, independent human action and later continuation. The evidence remains in [the spike history](webmcp-spike.md).
 
-Every write uses the current database revision. An atomic `UPDATE ... WHERE id = ? AND revision = ?` prevents lost updates. Conflicting requests receive `MISSION_CONFLICT_RETRY` rather than overwriting data. Partner pages poll every four seconds while visible so scope/reset changes update their actual registration maps. Each action reads fresh canonical state regardless of polling.
+## Durable mission state
+
+```text
+Top-level partner UI / native WebMCP
+  │ opaque mission handle + minimal capability arguments
+  ▼
+Partner server ── resolve signed site-local fictional session
+  │ authenticated HTTP; verify current signed Passport and scope
+  ▼
+Ruvel mission service ── verify current record again
+  │ prepared SQL + compare-and-swap revision
+  ▼
+Sites-managed D1 ── signed canonical state, approvals, completion and audit
+```
+
+The hub's logical D1 binding is `DB`. One row stores the signed Passport, all three partner outcomes, BrightEnergy approval records, optional completion timestamp and central audit. Phase 4 adds completion inside the existing signed JSON state, so no SQL migration or new persistence service is needed.
+
+Navigation transports only `?mission=m_<32 random hexadecimal characters>`. It contains no Passport, mission snapshot, partner state, approval or audit. The browser does not persist canonical state in local or session storage. Refreshes and fresh browser contexts resolve the D1 record again. The handle is intentionally a bearer reference for fictional demo data, not production authentication.
+
+Every write uses the current database revision. Atomic `UPDATE … WHERE id = ? AND revision = ?` prevents lost updates; a conflict returns `MISSION_CONFLICT_RETRY`. Partner actions always read fresh canonical state. Visible partner pages also poll while active so grants and resets update their actual native registration maps.
 
 ## Mission Passport
 
-The HMAC-SHA-256 design is preserved: the canonical state containing the Passport is signed server-side and stored in D1. It is not returned as a browser token. All three partner servers independently verify the canonical signature, mission ID, expiry and current scope before forwarding an action; the hub verifies the latest record again before committing. Public routes reject client-supplied `token`, `passport` or `state` snapshots. Internal resolution requires a separately configured service secret and never exposes the signed record through public responses.
-
-Runtime settings are documented in `.env.example`. Signing/service secrets remain Sites secrets, never `VITE_*` values or hosting metadata. All origins are server-configured, so navigation does not trust arbitrary counterpart origins from query strings.
+The Passport is HMAC-SHA-256 signed server-side and retained in D1; it is not returned as a browser token. All three partners independently verify signature, mission ID, expiry and current scope before forwarding an action. Ruvel verifies the latest record again before commit. Internal service calls use a separate server-only secret. Browser routes reject client-supplied Passport or state snapshots.
 
 Initial approved scopes are:
 
-- CivicAid: `check_eligibility`, `prepare_support_claim`.
-- BrightEnergy: `get_account_summary`, `apply_hardship`.
-- NextStep: `register_profile`, `match_roles`.
+- CivicAid: `check_eligibility`, `prepare_support_claim`
+- BrightEnergy: `get_account_summary`, `apply_hardship`
+- NextStep: `register_profile`, `match_roles`
 
-BrightEnergy's mission-only grant increments the Passport version and dynamically adds `change_plan`. The count is derived from successful native registrations, not a display constant. Canonical scope is authoritative even if a browser retains a stale registration.
+BrightEnergy's human mission-only grant increments the Passport version and adds `change_plan`. Its displayed count comes from successful native registrations, not a UI constant. Canonical scope remains authoritative even if a browser has a stale registration.
 
-## Site-local session identity
+The shared demo signing and service credentials were rotated across all four deployments in Phase 3. Previously signed missions remain invalid and are neither migrated nor silently re-signed. Credentials remain server-only hosting bindings.
 
-All three partner servers issue distinct signed, Secure, HttpOnly, SameSite=Lax demo-session cookies. These identify a deliberately fictional seeded session, not a real user or OAuth login. Cookies are purpose-separated by partner; one partner's cookie cannot authenticate another. Each partner resolves its masked citizen and records locally; the agent supplies no name, DOB, address, account number, tax identifier or customer ID.
+## Site-local sessions and data minimisation
 
-`check_eligibility({})` returns a clearly labelled fictional $782/fortnight estimate. `prepare_support_claim({})` requires a completed eligibility check and authorised employment disclosure. It prepares the five fields actually represented in the form (citizen, residence, employment status, support start, support program) and leaves one declaration for human input. It never submits a claim.
+Each partner issues a distinct signed, Secure, HttpOnly, SameSite=Lax fictional demo-session cookie. A partner resolves the fictional citizen and local records from that session; the agent supplies no name, date of birth, address, account/customer number or government identifier.
 
-The privacy panel renders actual invocation arguments from redacted audit metadata and sums actual identifier-key counts. The supported claim is: **Identity is resolved from CivicAid's existing signed-in session.** It does not claim that an AI can never see site data.
+CivicAid's `{}` calls return a fictional eligibility estimate and prepare, but never submit, a support claim. NextStep's `{}` profile registration and bounded `{limit}` matching return fixed fictional opportunities and submit no application. BrightEnergy retains the proven account, hardship and plan-change interaction.
 
-## Approval and audit
+Invocation audit stores redacted arguments and an `identifierArgumentCount`. The Receipt sums this value only when every counted invocation has complete metadata; otherwise it says **Not recorded**. A zero means no identity-bearing arguments were supplied in those recorded tool invocations. It does not claim the AI saw no site data or that data never crossed a boundary.
 
-NextStep exposes exactly `register_profile({})` and `match_roles({limit:3})`. Availability and identity come from its own signed fictional session. Profile registration requires current scope and authorised employment-disruption disclosure; matching requires an active profile and accepts only an integer limit from one to three. Matches are fixed, clearly labelled fictional opportunities, never external job API results. `match_roles` has `readOnlyHint: true`: it does not apply for a job or mutate an employment record, but the derived result and audit are persisted in the mission. NextStep adds no human-approval step. Repeated identical successful calls return the existing state without duplicate audit events.
+## Dynamic authority and approval
 
-BrightEnergy retains the same two-mode `change_plan` tool: `{plan: "saver_flex"}` returns `awaiting_approval`; a human approval is stored independently; `{approvalId}` completes only after current scope, mission ownership, expiry and human approval checks. Completed actions return the existing success idempotently. Reset creates a new Passport generation so stale approval identifiers cannot collide with new approvals on the same mission handle.
+BrightEnergy exposes exactly two tools initially. A current mission-only grant makes `change_plan` actually available without navigation. The server still returns `MISSION_SCOPE_DENIED` before grant.
 
-The central audit records real timestamps, server-configured origin, capability, redacted actual arguments, identifier-argument count and a bounded result summary. All three partners' events remain together across navigation. The complete tested journey has 19 unique events including hub events and four NextStep invocation/completion events. Duplicate plan completion does not append a second completion event. Identity-like argument keys are redacted; CivicAid and NextStep reject unexpected arguments entirely.
+`change_plan({plan: "saver_flex"})` creates a pending approval and returns `awaiting_approval` without changing the plan. A separate human-facing action stores approval independently. `change_plan({approvalId})` completes only after current scope, mission ownership, expiry and approval checks. The continuation is idempotent. This preserves human authority without holding a WebMCP transport open.
 
-## Reset and migration
+## Canonical completion and Mission Receipt
 
-Reset replaces all three partner states on the existing durable handle: CivicAid unchecked/no claim; BrightEnergy Standard Flex, $146, no hardship, no grant/approvals; NextStep profile not registered/no matches; initial unapproved Passport; a new mission-start audit. Reapproval restores each site's two initial tools. Other open pages observe the reset on the next read/action. Start Mission creates a new handle instead. Ruvel shows all three outcomes and a lightweight “MISSION READY TO COMPLETE” banner only when all are complete; no final receipt is implemented.
+Completion is a hub-only durable transition. It requires an approved current Passport and these canonical outcomes:
 
-The Phase 3 deployment rotates the shared signing and service credentials across all four sites. Old signatures are rejected, not migrated or silently re-signed. Old database rows may remain physically stored. A fresh/reset mission must receive new Passport approval. See the deployment credential note in `decisions.md`; this is not a product architecture change.
+- CivicAid eligibility checked and claim prepared
+- BrightEnergy hardship active and Saver Flex applied
+- NextStep profile active with at least one role match
 
-Phase 1 fragment snapshots are not silently trusted or imported. Updated clients remove legacy session snapshots and require a new durable mission. Historical Phase 1 transport tests remain, but production workers route only to the durable implementation. The Phase 1 Playwright regression is migrated to opaque-handle transport; the new Phase 2 path is designed to exercise both partners three times.
+An incomplete request returns `MISSION_INCOMPLETE` with human-readable blocking organisations. A successful transition stores one timestamp, appends one `mission_completed` event and is idempotent. The completed record is terminal for other partner mutations; Reset Demo is the deliberate recovery path.
+
+The Receipt is never accepted from the client. Ruvel derives it after each canonical read from the signed state, de-duplicated timestamp-ordered audit and server-configured origins. It is returned only when completion and all outcomes remain internally consistent.
+
+Derived evidence includes:
+
+- participating and completed organisations from Passport scopes and actual state
+- recorded tool actions from canonical `tool_invoked` records, not audit-row totals
+- authority decisions from Passport approval, capability grant and human approval records
+- elapsed time from mission start to durable completion
+- CivicAid estimate, BrightEnergy saving and NextStep match count from actual canonical results
+- BrightEnergy authority history with exact timestamps where the audit contains them
+- a human timeline and a secondary allowlisted technical audit
+
+The UI masks the bearer handle and omits approval IDs, session values, raw citizen data and unknown arguments/results. When native registration time is not present in the canonical audit, the authority history says so instead of fabricating a timestamp.
+
+## Audit and reset
+
+The central audit records real timestamps, server-configured origin, capability, redacted arguments, identifier-argument count and bounded result summaries. A complete Phase 4 golden path contains 20 unique events: the accepted Phase 3 journey's 19 plus terminal mission completion. Repeated continuation and completion do not add duplicates.
+
+Reset replaces all partner outcomes, grants and approvals, clears completion and its Receipt, starts a new audit and issues a fresh unapproved Passport generation on the same opaque handle. Reapproval restores each partner's two initial native tools.
 
 ## Bounded demo limitations
 
-- The unguessable mission handle is a bearer reference, not production user authentication. Only fictional data belongs here; real account binding/access control is out of scope.
-- A Passport expires after one hour; its durable record remains, but the demo must reset/reapprove rather than silently extend authority.
-- HMAC/service credentials are shared between trusted demo servers. Production key isolation and partner-specific service authorization are future work, not Phase 3 claims.
-- This is a compact signed JSON record in D1, not a general event-sourcing platform. Revision conflicts require an explicit retry.
+- Real WebMCP is proven in the tested Codex runtime, not every browser.
+- The mission handle is a bearer reference; production user authentication and account binding are out of scope.
+- Passport expiry is one hour. The demo resets/reapproves rather than silently extending authority.
+- Trusted demo servers share signing/service credentials. Production key isolation and per-partner service authorization remain future work.
+- D1 stores one compact signed mission document, not a general event-sourcing platform.
+- All identities, accounts, claims, amounts, employment information and opportunities are fictional; no external partner API is called.
 
-See [ADR-002](./decisions.md) for the storage decision. Final receipt visuals, real OAuth, a fourth partner and extra scenarios remain out of scope.
+See [the decisions](decisions.md), [judge walkthrough](judge-script.md) and latest phase report for evidence and exact deployed results.
