@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Fictional CivicAid financial support, prepared from a site-local demo session." />
+    <title>CivicAid · Financial Support</title>
+  </head>
+  <body>
+    <header><strong class="brand">CivicAid<span>PUBLIC SUPPORT · DEMONSTRATION</span></strong><span>Signed in · J. Citizen</span></header>
+    <main>
+      <section class="hero"><p class="eyebrow">YOUR RUVEL MISSION</p><h1>Financial Support</h1><p>One less thing to start from scratch.</p><p class="disclaimer">Fictional demo service. Not a government service or benefit estimate.</p></section>
+      <section class="layout">
+        <div class="stack">
+          <article class="card"><p class="eyebrow">CIVICAID SIGNED-IN SESSION</p><h2>We already know the starting point.</h2><dl><div><dt>Citizen</dt><dd>J. Citizen</dd></div><div><dt>Reference</dt><dd>•••• 2319</dd></div><div><dt>Residence</dt><dd>Sydney NSW</dd></div><div><dt>Employment status</dt><dd>Recently unemployed</dd></div></dl></article>
+          <article class="card"><p class="eyebrow">FINANCIAL SUPPORT</p><div class="status-grid"><div><span>Eligibility</span><strong id="eligibility">Unchecked</strong></div><div><span>Estimated support</span><strong id="support">—</strong><small>DEMO</small></div><div><span>Claim</span><strong id="claim-status">None</strong></div></div></article>
+          <article class="card" id="claim-card" hidden><p class="eyebrow">PREPARED CLAIM · NOT SUBMITTED</p><h2>Review your starting draft</h2><p id="field-counts"></p><dl id="claim-fields"></dl><p>One declaration still needs your review. No claim is submitted in this demo.</p></article>
+        </div>
+        <aside class="stack">
+          <article class="card"><p class="eyebrow">MISSION CAPABILITIES</p><h2>CivicAid Site Tools</h2><strong class="count" id="capability-count">0</strong><p id="webmcp-state">Checking WebMCP…</p><ul class="capabilities"><li>✓ Check eligibility</li><li>✓ Prepare support claim</li></ul></article>
+          <article class="card privacy"><p class="eyebrow">THE SESSION IS THE REFERENCE</p><h2>Agent tool arguments</h2><ol id="argument-log"><li>No tool calls yet.</li></ol><span>Identifiers supplied in tool arguments</span><strong class="count" id="identifier-count">—</strong><p>Identity is resolved from CivicAid’s existing signed-in session.</p></article>
+          <button id="return-mission" type="button">← Return to Mission</button><button class="secondary" id="reset-demo" type="button">Reset demo</button>
+        </aside>
+      </section>
+      <p id="notice" role="status"></p>
+    </main><script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

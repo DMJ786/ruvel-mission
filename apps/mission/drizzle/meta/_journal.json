@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1788178920318,
+      "tag": "0000_natural_victor_mancha",
+      "breakpoints": true
+    }
+  ]
+}

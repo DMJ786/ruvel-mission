@@ -20,12 +20,24 @@ async function key(secret: string) {
 }
 
 export async function signState(state: MissionState, secret: string) {
-  const payload = base64Url(encoder.encode(JSON.stringify(state)));
+  return signPayload(state, secret);
+}
+
+export async function signPayload(value: unknown, secret: string) {
+  const payload = base64Url(encoder.encode(JSON.stringify(value)));
   const signature = await crypto.subtle.sign("HMAC", await key(secret), encoder.encode(payload));
   return `${payload}.${base64Url(new Uint8Array(signature))}`;
 }
 
 export async function verifyState(token: string, secret: string, now: number) {
+  const state = await verifyPayload(token, secret) as MissionState;
+  if (!state?.passport || !Number.isFinite(state.passport.expiresAt)) throw new MissionError("PASSPORT_INVALID", 401);
+  if (state.passport.expiresAt <= now) throw new MissionError("PASSPORT_EXPIRED", 401);
+  return state;
+}
+
+export async function verifyPayload(token: string, secret: string): Promise<unknown> {
+  try {
   const [payload, signature, extra] = token.split(".");
   if (!payload || !signature || extra !== undefined) throw new MissionError("PASSPORT_INVALID", 401);
   const valid = await crypto.subtle.verify(
@@ -35,12 +47,8 @@ export async function verifyState(token: string, secret: string, now: number) {
     encoder.encode(payload),
   );
   if (!valid) throw new MissionError("PASSPORT_INVALID", 401);
-  let state: MissionState;
-  try {
-    state = JSON.parse(new TextDecoder().decode(decodeBase64Url(payload))) as MissionState;
+    return JSON.parse(new TextDecoder().decode(decodeBase64Url(payload))) as unknown;
   } catch {
     throw new MissionError("PASSPORT_INVALID", 401);
   }
-  if (state.passport.expiresAt <= now) throw new MissionError("PASSPORT_EXPIRED", 401);
-  return state;
 }

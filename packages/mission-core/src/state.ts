@@ -1,6 +1,7 @@
 import {
   BASE_CAPABILITIES,
   CHANGE_PLAN_CAPABILITY,
+  CIVIC_CAPABILITIES,
   type Approval,
   type AuditEvent,
   type AuditKind,
@@ -44,9 +45,9 @@ export function createInitialState(now: number): MissionState {
       issuedAt: now,
       expiresAt: now + 60 * 60 * 1000,
       approved: false,
-      scopes: { brightenergy: [...BASE_CAPABILITIES] },
+      scopes: { brightenergy: [...BASE_CAPABILITIES], civicaid: [...CIVIC_CAPABILITIES] },
       disclosures: {
-        allowed: ["employment disruption", "account assistance status", "plan outcome"],
+        allowed: ["employment disruption", "account assistance status", "plan outcome", "support claim status"],
         forbidden: ["government identifier", "full account number", "payment credentials"],
       },
     },
@@ -56,6 +57,7 @@ export function createInitialState(now: number): MissionState {
       hardshipStatus: "none",
       approvals: {},
     },
+    civicaid: { eligibility: "unchecked", estimatedFortnightlySupport: null, claim: "none", claimId: null, fields: [] },
     audit: [],
   };
   return append(state, now, "mission_started", "job_loss");
@@ -93,7 +95,7 @@ export function grantChangePlan(state: MissionState, now: number): MissionState 
   const scopes = [...state.passport.scopes.brightenergy, CHANGE_PLAN_CAPABILITY];
   const granted = bump({
     ...state,
-    passport: { ...state.passport, scopes: { brightenergy: scopes } },
+    passport: { ...state.passport, scopes: { ...state.passport.scopes, brightenergy: scopes } },
   });
   return append(granted, now, "capability_granted", CHANGE_PLAN_CAPABILITY);
 }
@@ -140,7 +142,7 @@ export function requestPlanChange(state: MissionState, now: number, plan: unknow
   if (existing) return { state, result: approvalResult(existing) };
   let next = invoke(state, now, CHANGE_PLAN_CAPABILITY);
   const approval: Approval = {
-    id: `approval_${state.passport.missionId}_${state.passport.version}`,
+    id: `approval_${state.passport.missionId}_${state.passport.generation ?? "legacy"}_${state.passport.version}`,
     missionId: state.passport.missionId,
     requestedAt: now,
     expiresAt: now + 10 * 60 * 1000,

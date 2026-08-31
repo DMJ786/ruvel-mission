@@ -1,39 +1,18 @@
-import { BASE_CAPABILITIES, CHANGE_PLAN_CAPABILITY, type ActionName, type ActionResponse, type Capability, type MissionState } from "../../../packages/mission-core/src/index";
+import { CHANGE_PLAN_CAPABILITY, type ActionName, type Capability, type MissionState } from "../../../packages/mission-core/src/index";
+import { MissionClient } from "../../../packages/mission-core/src/browser-client";
 import { registerOwnedTool, requireElement, type OwnedRegistration, type ToolDefinition } from "../../../packages/spike-core/src/index";
 import "./styles.css";
 
-const STORAGE_KEY = "ruvel.phase1.brightenergy";
-let token = "";
 let state: MissionState | undefined;
-let registrations = new Map<Capability, OwnedRegistration>();
-
-function returnOrigin() {
-  const value = new URLSearchParams(location.search).get("returnOrigin");
-  if (!value) throw new Error("Missing Ruvel Mission return origin");
-  const url = new URL(value);
-  if (url.protocol !== "https:") throw new Error("Ruvel Mission must use HTTPS");
-  return url.origin;
-}
+const registrations = new Map<Capability, OwnedRegistration>();
+const client = new MissionClient(async (response) => { state = response.state; await syncRegistrations(); render(); });
 
 async function api(action: ActionName, input: Record<string, unknown> = {}) {
-  const response = await fetch("/api/action", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, action, input }) });
-  const payload = await response.json() as ActionResponse & { error?: string; capability?: string };
-  if (!response.ok) throw new Error(payload.error ? `${payload.error}${payload.capability ? `: ${payload.capability}` : ""}` : `Request failed (${response.status})`);
-  token = payload.token;
-  state = payload.state;
-  sessionStorage.setItem(STORAGE_KEY, token);
-  await syncRegistrations();
-  render();
-  return payload.result;
+  return client.action(action, input);
 }
 
 async function restore() {
-  const match = /^#mission=(.+)$/u.exec(location.hash);
-  const incoming = match?.[1] ? decodeURIComponent(match[1]) : sessionStorage.getItem(STORAGE_KEY);
-  if (!incoming) throw new Error("Open BrightEnergy from an approved Ruvel Mission.");
-  history.replaceState(null, "", `${location.pathname}${location.search}`);
-  token = incoming;
-  await api("read_state");
+  await client.initialize(true);
 }
 
 function desiredCapabilities(): Capability[] {
@@ -117,8 +96,8 @@ function render() {
   const change = requireElement<HTMLLIElement>("#change-capability");
   change.classList.toggle("granted", granted); change.querySelector("span")!.textContent = granted ? "✓" : "✕";
   requireElement<HTMLElement>("#authority-state").textContent = granted ? "Granted — this mission only" : "Not granted for this mission";
-  requireElement<HTMLButtonElement>("#grant-capability").disabled = granted;
-  requireElement<HTMLButtonElement>("#request-change").disabled = !granted || complete;
+  requireElement<HTMLButtonElement>("#grant-capability").disabled = granted || !state.passport.approved;
+  requireElement<HTMLButtonElement>("#request-change").disabled = !granted || complete || !state.passport.approved;
   const pending = pendingApproval();
   const card = requireElement<HTMLElement>("#approval-card"); card.hidden = pending === undefined;
   if (pending) {
@@ -126,7 +105,7 @@ function render() {
     requireElement<HTMLButtonElement>("#approve-action").disabled = approved;
     requireElement<HTMLElement>("#approval-status").textContent = approved ? "Approved. The agent can now continue the action." : "Waiting for your decision.";
   }
-  const brightEvents = state.audit.filter((item) => item.kind !== "mission_started" && item.kind !== "passport_approved");
+  const brightEvents = state.audit.filter((item) => item.origin === client.sites?.brightenergy);
   requireElement<HTMLElement>("#event-count").textContent = `${brightEvents.length} events`;
   const list = requireElement<HTMLOListElement>("#audit-list"); list.replaceChildren();
   for (const item of [...brightEvents].reverse()) {
@@ -141,11 +120,13 @@ requireElement<HTMLButtonElement>("#grant-capability").addEventListener("click",
 requireElement<HTMLButtonElement>("#request-change").addEventListener("click", () => act("change_plan", { plan: "saver_flex" }, "Approval requested. The agent call has already returned."));
 requireElement<HTMLButtonElement>("#approve-action").addEventListener("click", () => { const pending = pendingApproval(); if (pending) act("approve_action", { approvalId: pending.id }, "Approved. Ask the agent to continue with the approval ID."); });
 requireElement<HTMLButtonElement>("#not-now").addEventListener("click", () => { requireElement<HTMLElement>("#approval-card").hidden = true; notice("Plan change left pending. No account change was made."); });
-requireElement<HTMLButtonElement>("#return-mission").addEventListener("click", () => { location.href = `${returnOrigin()}/?brightOrigin=${encodeURIComponent(location.origin)}#mission=${encodeURIComponent(token)}`; });
-requireElement<HTMLButtonElement>("#reset-demo").addEventListener("click", () => { void fetch("/api/reset", { method: "POST" }).then(async (response) => response.json() as Promise<ActionResponse>).then(async (payload) => { token = payload.token; state = payload.state; sessionStorage.setItem(STORAGE_KEY, token); for (const registration of registrations.values()) registration.unregister(); registrations = new Map(); await syncRegistrations(); render(); notice("Demo reset. Initial Passport still needs approval at Ruvel Mission."); }); });
+requireElement<HTMLButtonElement>("#return-mission").addEventListener("click", () => client.navigate("mission"));
+requireElement<HTMLButtonElement>("#reset-demo").addEventListener("click", () => { void client.reset().then(() => notice("Both organisations reset. Approve the Passport again at Ruvel Mission.")).catch((error: unknown) => notice(error instanceof Error ? error.message : "Reset failed")); });
 
 void restore().catch((error: unknown) => notice(error instanceof Error ? error.message : "Unable to open mission"));
 window.addEventListener("beforeunload", () => { for (const registration of registrations.values()) registration.unregister(); });
 
-// Ensure the expected initial surface stays explicit and testable.
-void BASE_CAPABILITIES;
+client.observe((message) => {
+  notice(message);
+  if (/PASSPORT|MISSION_NOT_FOUND/u.test(message)) { for (const registration of registrations.values()) registration.unregister(); registrations.clear(); updateCount(); }
+});

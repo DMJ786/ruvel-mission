@@ -1,17 +1,17 @@
-import { handleApiRequest, type SiteKind, type WorkerEnv } from "../packages/mission-core/src/server";
+import { handleDurableRequest, type DurableSite, type DurableEnv } from "../packages/mission-core/src/durable-server";
 
 declare const __PHASE1_FILES__: Record<string, { body: string; type: string }>;
-declare const __PHASE1_SITE_KIND__: SiteKind;
+declare const __PHASE1_SITE_KIND__: DurableSite;
 
 function decode(value: string) {
   return Uint8Array.from(atob(value), (character) => character.charCodeAt(0));
 }
 
 export default {
-  async fetch(request: Request, env: WorkerEnv) {
+  async fetch(request: Request, env: DurableEnv) {
     const url = new URL(request.url);
     if (url.pathname.startsWith("/api/")) {
-      return handleApiRequest(request, env, __PHASE1_SITE_KIND__);
+      return handleDurableRequest(request, env, __PHASE1_SITE_KIND__);
     }
     const pathname = url.pathname === "/" ? "/index.html" : url.pathname;
     const file = __PHASE1_FILES__[pathname];

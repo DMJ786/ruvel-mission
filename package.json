@@ -5,9 +5,9 @@
   "packageManager": "pnpm@11.19.0",
   "scripts": {
     "build": "pnpm -r build",
-    "dev": "concurrently -k -n MISSION,BRIGHTENERGY -c cyan,green \"pnpm --filter @ruvel/mission-hub dev\" \"pnpm --filter @ruvel/brightenergy dev\"",
+    "dev": "concurrently -k -n MISSION,BRIGHTENERGY,CIVICAID -c cyan,green,blue \"pnpm --filter @ruvel/mission-hub dev\" \"pnpm --filter @ruvel/brightenergy dev\" \"pnpm --filter @ruvel/civicaid dev\"",
     "lint": "eslint .",
-    "test": "vitest run packages/spike-core/tests/index.test.ts packages/mission-core/tests/phase1.test.ts",
+    "test": "vitest run packages/spike-core/tests/index.test.ts packages/mission-core/tests/phase1.test.ts packages/mission-core/tests/phase2.test.ts",
     "test:e2e": "playwright test",
     "typecheck": "pnpm -r typecheck"
   },
@@ -17,6 +17,8 @@
     "@playwright/test": "^1.62.1",
     "@types/node": "^22.18.0",
     "concurrently": "^9.2.1",
+    "drizzle-kit": "^0.31.10",
+    "drizzle-orm": "^0.45.2",
     "eslint": "^9.35.0",
     "globals": "^16.3.0",
     "typescript": "^5.9.2",

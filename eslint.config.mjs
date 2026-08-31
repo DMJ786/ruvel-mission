@@ -9,6 +9,7 @@ export default tseslint.config(
       "**/node_modules/**",
       "**/node_modules.stuck/**",
       "certs/**",
+      "artifacts/**",
     ],
   },
   eslint.configs.recommended,

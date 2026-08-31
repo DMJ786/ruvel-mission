@@ -1,5 +1,18 @@
 # Architecture decisions
 
+## ADR-002: Move Phase 1 portable envelope to durable mission storage
+
+- Status: Accepted for Phase 2
+- Date: 2026-08-31
+
+Phase 1's signed portable envelope minimized infrastructure while proving top-level WebMCP, actual capability registration, server scope denial, and asynchronous approval. Its growing URLs, replayable snapshots, lack of centralized reset, and potential lost updates make it unsuitable for the two-partner journey.
+
+Phase 2 stores the canonical signed state in a Sites-managed D1 database owned by the hub. Navigation carries only a cryptographically random opaque `mission` handle. Partners resolve canonical state through authenticated server-to-server HTTP requests, verify its signature and current scope, and commit using compare-and-swap revisions. A conflict returns an explicit retry error rather than overwriting another partner. The browser holds only a rendered snapshot; it cannot submit a Passport or authoritative state.
+
+This uses the deployment platform's existing persistence support rather than introducing Supabase credentials or another service. D1 is hidden behind one small store helper. BrightEnergy's interaction and approval reducers remain unchanged. CivicAid resolves a fictional citizen from a signed site-local demo-session cookie, never from agent identity arguments. The demo remains explicitly fictional; the opaque handle is a bearer reference, not production user authentication.
+
+The Phase 1 transport is retained only in historical unit tests, not routed by production workers. Existing fragment sessions must start a new durable demo mission. Reset updates the same durable handle so other open partner pages observe the reset on their next read/action. No NextStep implementation is part of this decision.
+
 ## ADR-001: Use top-level multi-page WebMCP partners
 
 - Status: Accepted

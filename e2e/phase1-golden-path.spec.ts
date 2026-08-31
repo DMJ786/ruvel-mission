@@ -58,11 +58,11 @@ for (const run of [1, 2, 3]) {
     await expect(page.locator("#hardship-status")).toHaveText("Temporary relief");
 
     const denial = await page.evaluate(async () => {
-      const token = sessionStorage.getItem("ruvel.phase1.brightenergy");
+      const missionId = new URLSearchParams(location.search).get("mission");
       const response = await fetch("/api/action", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, action: "change_plan", input: { plan: "saver_flex" } }),
+        body: JSON.stringify({ missionId, action: "change_plan", input: { plan: "saver_flex" } }),
       });
       return { status: response.status, body: await response.json() as Record<string, unknown> };
     });

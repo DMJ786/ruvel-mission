@@ -1,5 +1,7 @@
 export const BASE_CAPABILITIES = ["get_account_summary", "apply_hardship"] as const;
 export const CHANGE_PLAN_CAPABILITY = "change_plan" as const;
+export const CIVIC_CAPABILITIES = ["check_eligibility", "prepare_support_claim"] as const;
+export type CivicCapability = (typeof CIVIC_CAPABILITIES)[number];
 
 export type Capability = (typeof BASE_CAPABILITIES)[number] | typeof CHANGE_PLAN_CAPABILITY;
 export type AuditKind =
@@ -16,15 +18,21 @@ export type AuditEvent = {
   at: number;
   kind: AuditKind;
   detail?: string;
+  origin?: string;
+  capability?: string;
+  redactedArgs?: Record<string, unknown>;
+  identifierArgumentCount?: number;
+  resultSummary?: Record<string, unknown>;
 };
 
 export type MissionPassport = {
   missionId: string;
   version: number;
+  generation?: string;
   issuedAt: number;
   expiresAt: number;
   approved: boolean;
-  scopes: { brightenergy: Capability[] };
+  scopes: { brightenergy: Capability[]; civicaid: CivicCapability[] };
   disclosures: { allowed: string[]; forbidden: string[] };
 };
 
@@ -47,6 +55,13 @@ export type MissionState = {
     approvals: Record<string, Approval>;
   };
   audit: AuditEvent[];
+  civicaid: {
+    eligibility: "unchecked" | "eligible";
+    estimatedFortnightlySupport: number | null;
+    claim: "none" | "prepared";
+    claimId: string | null;
+    fields: { key: string; label: string; value: string | null; source: string }[];
+  };
 };
 
 export type ActionName =
@@ -57,6 +72,17 @@ export type ActionName =
   | "grant_change_plan"
   | "change_plan"
   | "approve_action";
+
+export type DurableAction = ActionName | CivicCapability;
+export type DurableResponse = {
+  missionId: string;
+  revision: number;
+  createdAt: string;
+  updatedAt: string;
+  state: MissionState;
+  result: Record<string, unknown>;
+  sites: { mission: string; brightenergy: string; civicaid: string };
+};
 
 export type ActionRequest = {
   token: string;
