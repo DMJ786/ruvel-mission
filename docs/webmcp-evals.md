@@ -64,6 +64,14 @@ Final result: **10/10 cases passed, 0 failed, 0 errors**. The CLI reconciled **1
 
 One NextStep attempt encountered a transport-level `fetch failed` before a tool call. A single clean rerun passed both NextStep cases 2/2; the failed attempt is retained in the temporary local evidence and was not treated as a product result.
 
+## Authority-bound capability lifecycle
+
+A fresh deployed BrightEnergy Mission was observed through both `document.modelContext.getTools()` and the Chrome browser-agent registry. Before authorization, both reported exactly two tools: `get_account_summary` and `apply_hardship`. Granting the existing mission-only permission emitted one native `toolchange` event at `2026-09-02T14:11:00.893Z`; the registry read completed at `14:11:00.929Z` with exactly three tools and `change_plan` present. The 2 → 3 transition required no reload.
+
+The existing Reset Demo flow terminates the full Passport rather than revoking only `change_plan`, so it does not expose a direct 3 → 2 transition. Reset emitted three native unregister events at `14:11:06.702Z`, `14:11:06.733Z` and `14:11:06.756Z`, leaving zero tools. Fresh Passport approval then emitted two native register events at `14:11:14.110Z` and `14:11:14.118Z`, restoring the two-tool baseline without reload. An independent confirmation run reproduced the complete 2 → 3 → 0 → 2 lifecycle and event pattern. No permission-only revoke path was added or inferred.
+
+The deployed page also produced the already-known hosting/runtime CSP message about a blocked inline script on both runs. It did not affect the native registry, event delivery or lifecycle result. During the post-documentation deployed Playwright audit, one Phase 3 run observed a transient HTTP 401 in its console check; the other two Phase 3 runs passed, and an identical targeted rerun of the failed case passed 1/1. The transient result is not presented as a product or WebMCP contract pass.
+
 ## Audit findings
 
 - Tool names are specific verb–noun capabilities rather than page-control primitives.

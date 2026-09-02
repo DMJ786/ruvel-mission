@@ -178,6 +178,8 @@ Copy `.env.example` only when configuring a compatible server runtime. Keep real
 
 **WebMCP validation:** GoogleChromeLabs `webmcp-evals` independently reproduced the deployed tool surfaces and BrightEnergy's 2 → 3 authority transition. Gemini-backed natural-language evaluation passed 10/10 cases with exact required tool selections and arguments.
 
+**Authority-bound capability lifecycle:** BrightEnergy begins with 2 WebMCP tools. Granting mission-only plan authority dynamically registers `change_plan`, producing a native `toolchange` event and a 2 → 3 registry transition without reload. Terminating the Mission Passport unregisters the Mission capability surface (3 → 0); establishing a fresh Passport restores the baseline 0 → 2 surface. The complete lifecycle was reproduced twice.
+
 ```bash
 pnpm lint
 pnpm typecheck
