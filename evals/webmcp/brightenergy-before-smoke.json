@@ -1,0 +1,36 @@
+[
+  {
+    "name": "BrightEnergy account summary before grant",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Show me the current plan, estimated monthly cost and hardship status for the signed-in demo energy account."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "get_account_summary",
+        "arguments": {}
+      }
+    ]
+  },
+  {
+    "name": "BrightEnergy temporary hardship relief",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Please activate the available temporary hardship relief for this demo energy account."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "apply_hardship",
+        "arguments": {
+          "program": "temporary_relief"
+        }
+      }
+    ]
+  }
+]

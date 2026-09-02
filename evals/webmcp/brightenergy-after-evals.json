@@ -1,0 +1,72 @@
+[
+  {
+    "name": "BrightEnergy authorised account summary",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Review the current demo energy account before we consider any authorised plan change."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "get_account_summary",
+        "arguments": {}
+      }
+    ]
+  },
+  {
+    "name": "BrightEnergy authorised hardship relief",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Apply the temporary relief program to this authorised fictional energy account."
+      }
+    ],
+    "expectedCall": [
+      {
+        "unordered": [
+          {
+            "functionName": "get_account_summary",
+            "arguments": {},
+            "optional": true
+          },
+          {
+            "functionName": "apply_hardship",
+            "arguments": {
+              "program": "temporary_relief"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "BrightEnergy authorised Saver Flex request",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "The mission-only plan-change capability is now authorised. Request Saver Flex and leave the change waiting for the person's approval."
+      }
+    ],
+    "expectedCall": [
+      {
+        "unordered": [
+          {
+            "functionName": "get_account_summary",
+            "arguments": {},
+            "optional": true
+          },
+          {
+            "functionName": "change_plan",
+            "arguments": {
+              "plan": "saver_flex"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

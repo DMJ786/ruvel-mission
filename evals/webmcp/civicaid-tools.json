@@ -1,0 +1,24 @@
+{
+  "tools": [
+    {
+      "name": "check_eligibility",
+      "description": "Check fictional financial-support eligibility using CivicAid's signed-in demo session. No name, address, account or identity arguments are needed.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "outputSchema": null
+    },
+    {
+      "name": "prepare_support_claim",
+      "description": "Prepare, but do not submit, a fictional support claim from CivicAid's signed-in session, site records and mission-authorised disclosures. Check eligibility first. No identity arguments are needed.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "outputSchema": null
+    }
+  ]
+}

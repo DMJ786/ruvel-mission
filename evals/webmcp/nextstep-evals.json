@@ -1,0 +1,57 @@
+[
+  {
+    "name": "NextStep profile registration",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Register my fictional NextStep employment profile from the signed-in site context, but do not submit any job applications."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "register_profile",
+        "arguments": {}
+      }
+    ]
+  },
+  {
+    "name": "NextStep three role matches for active profile",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Register my fictional NextStep employment profile from the signed-in site context."
+      },
+      {
+        "role": "model",
+        "type": "functioncall",
+        "name": "register_profile",
+        "arguments": {}
+      },
+      {
+        "role": "user",
+        "type": "functionresponse",
+        "name": "register_profile",
+        "response": {
+          "status": "registered",
+          "profileStatus": "active",
+          "demo": true
+        }
+      },
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Now find the three best demo role matches, but do not apply for anything."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "match_roles",
+        "arguments": {
+          "limit": 3
+        }
+      }
+    ]
+  }
+]

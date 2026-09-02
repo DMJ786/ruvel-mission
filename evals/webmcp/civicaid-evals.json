@@ -1,0 +1,57 @@
+[
+  {
+    "name": "CivicAid eligibility from site session",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Please check whether I qualify for the fictional CivicAid support using the details already in my signed-in session."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "check_eligibility",
+        "arguments": {}
+      }
+    ]
+  },
+  {
+    "name": "CivicAid claim preparation after eligibility",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Please check whether I qualify for the fictional CivicAid support."
+      },
+      {
+        "role": "model",
+        "type": "functioncall",
+        "name": "check_eligibility",
+        "arguments": {}
+      },
+      {
+        "role": "user",
+        "type": "functionresponse",
+        "name": "check_eligibility",
+        "response": {
+          "eligible": true,
+          "estimatedFortnightlySupport": 782,
+          "reason": "recent_job_loss",
+          "nextStep": "prepare_support_claim",
+          "demo": true
+        }
+      },
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Now prepare the support claim using the signed-in site details, but do not submit it."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "prepare_support_claim",
+        "arguments": {}
+      }
+    ]
+  }
+]

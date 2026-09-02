@@ -1,0 +1,62 @@
+[
+  {
+    "name": "BrightEnergy account summary before grant",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Show me the current plan, estimated monthly cost and hardship status for the signed-in demo energy account."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "get_account_summary",
+        "arguments": {}
+      }
+    ]
+  },
+  {
+    "name": "BrightEnergy temporary hardship relief",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Please activate the available temporary hardship relief for this demo energy account."
+      }
+    ],
+    "expectedCall": [
+      {
+        "unordered": [
+          {
+            "functionName": "get_account_summary",
+            "arguments": {},
+            "optional": true
+          },
+          {
+            "functionName": "apply_hardship",
+            "arguments": {
+              "program": "temporary_relief"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "BrightEnergy plan change unavailable before grant",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Move this demo energy account to Saver Flex now."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "get_account_summary",
+        "arguments": {},
+        "optional": true
+      }
+    ]
+  }
+]

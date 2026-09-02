@@ -1,0 +1,31 @@
+{
+  "tools": [
+    {
+      "name": "register_profile",
+      "description": "Register the fictional employment-support profile from NextStep's own signed-in session and mission-authorised employment context. No identity arguments or additional human approval are needed. No job application is submitted.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "outputSchema": null
+    },
+    {
+      "name": "match_roles",
+      "description": "Read fictional demo opportunities matching the signed-in NextStep profile. Register the profile first. This search changes no employment record and submits no applications; its results are saved to the mission.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3,
+            "default": 3
+          }
+        },
+        "additionalProperties": false
+      },
+      "outputSchema": null
+    }
+  ]
+}

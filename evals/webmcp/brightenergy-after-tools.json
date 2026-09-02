@@ -1,0 +1,66 @@
+{
+  "tools": [
+    {
+      "name": "get_account_summary",
+      "description": "Read the fictional signed-in customer's current energy plan, estimated monthly cost, and hardship status. No customer identifier is required.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "outputSchema": null
+    },
+    {
+      "name": "apply_hardship",
+      "description": "Activate the temporary relief program for the fictional signed-in customer under the current Mission Passport.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "program": {
+            "type": "string",
+            "enum": [
+              "temporary_relief"
+            ]
+          }
+        },
+        "required": [
+          "program"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": null
+    },
+    {
+      "name": "change_plan",
+      "description": "First request Saver Flex and receive awaiting_approval. After the human approves on the page, call this tool again with approvalId to complete idempotently.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "plan": {
+            "type": "string",
+            "enum": [
+              "saver_flex"
+            ]
+          },
+          "approvalId": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "anyOf": [
+          {
+            "required": [
+              "plan"
+            ]
+          },
+          {
+            "required": [
+              "approvalId"
+            ]
+          }
+        ]
+      },
+      "outputSchema": null
+    }
+  ]
+}

@@ -176,6 +176,8 @@ Copy `.env.example` only when configuring a compatible server runtime. Keep real
 
 ## Tests and validation
 
+**WebMCP validation:** GoogleChromeLabs `webmcp-evals` independently reproduced the deployed tool surfaces and BrightEnergy's 2 → 3 authority transition. Gemini-backed natural-language evaluation passed 10/10 cases with exact required tool selections and arguments.
+
 ```bash
 pnpm lint
 pnpm typecheck
